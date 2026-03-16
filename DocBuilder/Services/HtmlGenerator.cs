@@ -188,6 +188,19 @@ namespace DocBuilder.WPF.Services
         
         .content-img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0; }
         pre { background: #1a202c; color: #e2e8f0; padding: 20px; border-radius: 10px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.95rem; }
+/* This makes the published highlight match your editor's yellow look */
+.marker {
+    background-color: #fef3c7; /* Soft yellow */
+    color: #92400e;            /* Darker text for readability */
+    padding: 0 4px;
+    border-radius: 2px;
+}
+
+/* Ensure links look professional */
+a {
+    color: #667eea;
+    text-decoration: underline;
+}
     </style>
 </head>
 <body>

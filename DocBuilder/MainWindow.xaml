@@ -3,11 +3,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DocBuilder.WPF.ViewModels"
         xmlns:models="clr-namespace:DocBuilder.Models"
+        xmlns:helpers="clr-namespace:DocBuilder.Helpers"
         x:Name="RootWindow" 
         Title="Documentation Builder" Height="800" Width="1400"
         Background="#F5F5F7">
 
   <Window.Resources>
+    <Style x:Key="ToolbarBtn" TargetType="Button">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="8,4"/>
+      <Setter Property="Margin" Value="2,0"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="#EDF2F7"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+    <Style x:Key="ActionButton" TargetType="Button">
+      <Setter Property="Background" Value="#F8FAFC"/>
+      <Setter Property="Foreground" Value="#475569"/>
+      <Setter Property="BorderBrush" Value="#E2E8F0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="12,6"/>
+      <Setter Property="Margin" Value="4"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="6">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="#F1F5F9"/>
+          <Setter Property="BorderBrush" Value="#CBD5E0"/>
+        </Trigger>
+        <Trigger Property="IsPressed" Value="True">
+          <Setter Property="Background" Value="#E2E8F0"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
     <DataTemplate DataType="{x:Type models:DocSection}">
       <Border x:Name="SectionBorder" Background="White" CornerRadius="8" Margin="0,0,0,12" 
                 Padding="15" BorderBrush="#E2E8F0" BorderThickness="1">
@@ -18,20 +63,54 @@
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
 
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
           <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,5,0,0">
             <TextBlock x:Name="IconText" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" Visibility="Collapsed"/>
             <TextBlock x:Name="TypeText" Text="{Binding Type}" FontWeight="Bold" Foreground="#667eea" FontSize="11" VerticalAlignment="Center"/>
           </StackPanel>
 
-          <TextBox x:Name="MainInput" Grid.Column="1" 
-                         Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}" 
-                         AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" 
-                         FontSize="14" Foreground="#2D3748" Padding="5"
-                         MinWidth="200" Background="Transparent"/>
+          <RichTextBox x:Name="MainInput" Grid.Column="1" Grid.Row="0"
+                             helpers:RichTextHelper.Html="{Binding Content, UpdateSourceTrigger=PropertyChanged}"
+                             BorderThickness="0" FontSize="14" Foreground="#2D3748" Padding="5"
+                             MinWidth="200" Background="Transparent" AcceptsReturn="True">
+            <RichTextBox.CommandBindings>
+              <CommandBinding Command="ApplicationCommands.Paste" Executed="PasteAsPlainText_Executed" />
+            </RichTextBox.CommandBindings>
+            <RichTextBox.Resources>
+              <Style TargetType="{x:Type Paragraph}">
+                <Setter Property="Margin" Value="0"/>
+              </Style>
+            </RichTextBox.Resources>
+          </RichTextBox>
 
           <Rectangle x:Name="PartingLine" Grid.Column="1" Height="2" Fill="#E2E8F0" Visibility="Collapsed" VerticalAlignment="Center"/>
 
+          <Border x:Name="FormatToolbar" Grid.Row="1" Grid.Column="1" 
+                        Visibility="Collapsed" Margin="0,10,0,0" Padding="5"
+                        Background="#F7FAF6" CornerRadius="4" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0">
+            <StackPanel Orientation="Horizontal">
+              <Button Content="B" FontWeight="Bold" Click="ToggleBold_Click" Style="{StaticResource ToolbarBtn}"/>
+              <Button Content="I" FontStyle="Italic" Click="ToggleItalic_Click" Style="{StaticResource ToolbarBtn}"/>
+
+              <Button Click="ToggleUnderline_Click" Style="{StaticResource ToolbarBtn}">
+                <TextBlock Text="U" TextDecorations="Underline"/>
+              </Button>
+
+              <Separator Margin="5,5" Background="#E2E8F0"/>
+
+              <Button Content="Highlight" Click="ToggleHighlight_Click" Style="{StaticResource ToolbarBtn}" Background="#FEF3C7"/>
+              <Button Content="Link" Click="AddLink_Click" Style="{StaticResource ToolbarBtn}"/>
+            </StackPanel>
+          </Border>
+
           <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
+            <Button Content="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="12" Click="ToggleFormat_Click" 
+                            Background="Transparent" Foreground="#4A5568" Margin="2,0" ToolTip="Format Options"/>
+
             <Button Content="&#xE74A;" FontFamily="Segoe MDL2 Assets" FontSize="12" Click="MoveSectionUp_Click" Background="Transparent" Foreground="#4A5568" Margin="2,0" ToolTip="Move Up"/>
             <Button Content="&#xE74B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Click="MoveSectionDown_Click" Background="Transparent" Foreground="#4A5568" Margin="2,0" ToolTip="Move Down"/>
             <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" Click="RemoveSection_Click" Background="Transparent" Foreground="#E53E3E" Margin="10,0,0,0" ToolTip="Delete"/>
@@ -293,23 +372,45 @@
         <ItemsControl ItemsSource="{Binding CurrentPage.Sections}"/>
       </ScrollViewer>
 
-      <Border Grid.Row="2" Padding="20,10" Background="White" CornerRadius="10" Margin="0,20,0,0">
+      <Border Grid.Row="2" Padding="15,10" Background="White" CornerRadius="12" Margin="0,20,0,0" Effect="{DynamicResource DropShadowEffect}">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Button Content="H1" Command="{Binding AddSectionCommand}" CommandParameter="H1" Margin="3" Width="40"/>
-          <Button Content="H2" Command="{Binding AddSectionCommand}" CommandParameter="H2" Margin="3" Width="40"/>
-          <Button Content="H3" Command="{Binding AddSectionCommand}" CommandParameter="H3" Margin="3" Width="40"/>
-          <Button Content="Description" Command="{Binding AddSectionCommand}" CommandParameter="Paragraph" Margin="3" Padding="10,5"/>
-          <Button Content="Code Block" Command="{Binding AddSectionCommand}" CommandParameter="Code" Margin="3" Padding="10,5"/>
-          <Button Content="Image Link" Command="{Binding AddSectionCommand}" CommandParameter="Image" Margin="3" Padding="10,5"/>
-          <Button Content="⚠ Warning" Command="{Binding AddSectionCommand}" CommandParameter="Warning" Background="#FFF5F5" Foreground="#C53030" Margin="3"/>
-          <Button Content="💡 Note" Command="{Binding AddSectionCommand}" CommandParameter="Note" Background="#FFFFF0" Foreground="#B7791F" Margin="3"/>
-          <Button Content="― Separator" Command="{Binding AddSectionCommand}" CommandParameter="Separator" Margin="3"/>
-          <Button Content="🏷 Tags" Command="{Binding AddSectionCommand}" CommandParameter="Tags" Margin="3"/>
-          <Button Content="• List" Command="{Binding AddSectionCommand}" CommandParameter="Bullets" Margin="3"/>
-          <Separator Width="20" Background="Transparent"/>
-          
-          <Button Content="PUBLISH TO IIS" Command="{Binding PublishCommand}" 
-                            Background="#10B981" Foreground="White" FontWeight="Bold" Padding="20,8"/>
+          <Button Content="H1" Command="{Binding AddSectionCommand}" CommandParameter="H1" Style="{StaticResource ActionButton}" Width="45"/>
+          <Button Content="H2" Command="{Binding AddSectionCommand}" CommandParameter="H2" Style="{StaticResource ActionButton}" Width="45"/>
+          <Button Content="H3" Command="{Binding AddSectionCommand}" CommandParameter="H3" Style="{StaticResource ActionButton}" Width="45"/>
+
+          <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,5"/>
+
+          <Button Content="Description" Command="{Binding AddSectionCommand}" CommandParameter="Paragraph" Style="{StaticResource ActionButton}"/>
+          <Button Content="Code" Command="{Binding AddSectionCommand}" CommandParameter="Code" Style="{StaticResource ActionButton}"
+                  Background="#1A202C" Foreground="#E2E8F0" BorderBrush="#333333" />
+          <Button Content="Image" Command="{Binding AddSectionCommand}" CommandParameter="Image" Style="{StaticResource ActionButton}"/>
+
+          <Button Content="⚠ Warning" Command="{Binding AddSectionCommand}" CommandParameter="Warning" 
+                Style="{StaticResource ActionButton}" Background="#FFF5F5" Foreground="#C53030" BorderBrush="#FEB2B2"/>
+
+          <Button Content="💡 Note" Command="{Binding AddSectionCommand}" CommandParameter="Note" 
+                Style="{StaticResource ActionButton}" Background="#FFFFF0" Foreground="#B7791F" BorderBrush="#F6E05E"/>
+
+          <Button Content="― Separator" Command="{Binding AddSectionCommand}" CommandParameter="Separator" Style="{StaticResource ActionButton}"/>
+          <Button Content="🏷 Tags" Command="{Binding AddSectionCommand}" CommandParameter="Tags" Style="{StaticResource ActionButton}"/>
+          <Button Content="• List" Command="{Binding AddSectionCommand}" CommandParameter="Bullets" Style="{StaticResource ActionButton}"/>
+
+          <Rectangle Width="1" Fill="#E2E8F0" Margin="15,8"/>
+
+          <Button Command="{Binding PublishCommand}" Padding="25,10" Cursor="Hand">
+            <Button.Template>
+              <ControlTemplate TargetType="Button">
+                <Border Background="#10B781" 
+              CornerRadius="8" 
+              Padding="{TemplateBinding Padding}">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="PUBLISH TO IIS" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Border>
+              </ControlTemplate>
+            </Button.Template>
+          </Button>
         </StackPanel>
       </Border>
     </Grid>

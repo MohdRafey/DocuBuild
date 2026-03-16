@@ -10,6 +10,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Clipboard = System.Windows.Clipboard;
+using RichTextBox = System.Windows.Controls.RichTextBox;
 
 namespace DocBuilder
 {
@@ -71,6 +73,11 @@ namespace DocBuilder
     }
 
     private System.Windows.Point _startPoint;
+
+    private void PageTree_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+      _startPoint = e.GetPosition(null);
+    }
 
     private void PageTree_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
     {
@@ -159,6 +166,18 @@ namespace DocBuilder
       return null;
     }
 
+    private T FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+    {
+      DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+      if (parentObject == null) return null;
+
+      if (parentObject is T parent)
+        return parent;
+      else
+        return FindVisualParent<T>(parentObject);
+    }
+
     private void PageTree_QueryContinueDrag(object sender, System.Windows.QueryContinueDragEventArgs e)
     {
       // If the Escape key is pressed, cancel the drag operation
@@ -174,6 +193,91 @@ namespace DocBuilder
       if (e.NewValue is DocPage selectedPage)
       {
         vm.CurrentPage = selectedPage;
+      }
+    }
+
+    private void ToggleFormat_Click(object sender, RoutedEventArgs e)
+    {
+      // Find the toolbar in the current template and toggle Visibility
+      var btn = sender as System.Windows.Controls.Button;
+      var grid = FindVisualParent<Grid>(btn);
+      var toolbar = (Border)grid.FindName("FormatToolbar");
+      toolbar.Visibility = toolbar.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void ToggleHighlight_Click(object sender, RoutedEventArgs e)
+    {
+      var rtb = FindVisualParent<Grid>((System.Windows.Controls.Button)sender).Children.OfType<RichTextBox>().First();
+      var selection = rtb.Selection;
+
+      if (!selection.IsEmpty)
+      {
+        // Toggle yellow background
+        var currentBg = selection.GetPropertyValue(TextElement.BackgroundProperty);
+        selection.ApplyPropertyValue(TextElement.BackgroundProperty,
+            currentBg == System.Windows.Media.Brushes.Yellow ?
+            System.Windows.Media.Brushes.Transparent :
+            System.Windows.Media.Brushes.Yellow);
+      }
+    }
+
+    private void AddLink_Click(object sender, RoutedEventArgs e)
+    {
+      var rtb = FindVisualParent<Grid>((System.Windows.Controls.Button)sender).Children.OfType<RichTextBox>().First();
+      var selection = rtb.Selection;
+
+      if (selection.IsEmpty)
+      {
+        System.Windows.MessageBox.Show("Please select some text first to turn it into a link.");
+        return;
+      }
+
+      // A simple way to get input without a whole new window
+      string url = Microsoft.VisualBasic.Interaction.InputBox("Enter the URL:", "Insert Hyperlink", "https://");
+
+      if (!string.IsNullOrEmpty(url))
+      {
+        // Simple check to add https if the user forgot it
+        if (!url.StartsWith("http")) url = "https://" + url;
+
+        var link = new Hyperlink(selection.Start, selection.End);
+        try
+        {
+          link.NavigateUri = new Uri(url);
+        }
+        catch
+        {
+          System.Windows.MessageBox.Show("Invalid URL. Please try again.");
+        }
+      }
+    }
+
+    private void ToggleBold_Click(object sender, RoutedEventArgs e)
+    {
+      var rtb = FindVisualParent<Grid>((System.Windows.Controls.Button)sender).Children.OfType<RichTextBox>().First();
+      EditingCommands.ToggleBold.Execute(null, rtb);
+    }
+
+    private void ToggleItalic_Click(object sender, RoutedEventArgs e)
+    {
+      var rtb = FindVisualParent<Grid>((System.Windows.Controls.Button)sender).Children.OfType<RichTextBox>().First();
+      EditingCommands.ToggleItalic.Execute(null, rtb);
+    }
+
+    private void ToggleUnderline_Click(object sender, RoutedEventArgs e)
+    {
+      var rtb = FindVisualParent<Grid>((System.Windows.Controls.Button)sender).Children.OfType<RichTextBox>().First();
+      EditingCommands.ToggleUnderline.Execute(null, rtb);
+    }
+
+    private void PasteAsPlainText_Executed(object sender, ExecutedRoutedEventArgs e)
+    {
+      if (Clipboard.ContainsText())
+      {
+        var rtb = sender as RichTextBox;
+        rtb.BeginChange();
+        rtb.Selection.Text = Clipboard.GetText(); // Inserts as raw text, no HTML/RTF mess
+        rtb.EndChange();
       }
     }
   }
