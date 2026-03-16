@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DocBuilder.WPF.ViewModels"
         xmlns:models="clr-namespace:DocBuilder.Models"
-        Title="Documentation Builder" Height="700" Width="1100"
+        x:Name="RootWindow" 
+        Title="Documentation Builder" Height="800" Width="1400"
         Background="#F5F5F7">
 
   <Window.Resources>
     <DataTemplate DataType="{x:Type models:DocSection}">
-      <Border Background="White" CornerRadius="8" Margin="0,0,0,12" Padding="15" 
-                BorderBrush="#E2E8F0" BorderThickness="1">
+      <Border x:Name="SectionBorder" Background="White" CornerRadius="8" Margin="0,0,0,12" 
+                Padding="15" BorderBrush="#E2E8F0" BorderThickness="1">
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="80"/>
@@ -17,62 +18,261 @@
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
 
-          <TextBlock Text="{Binding Type}" VerticalAlignment="Top" Margin="0,8,0,0"
-                           FontWeight="Bold" Foreground="#667eea" FontSize="11"/>
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,5,0,0">
+            <TextBlock x:Name="IconText" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" Visibility="Collapsed"/>
+            <TextBlock x:Name="TypeText" Text="{Binding Type}" FontWeight="Bold" Foreground="#667eea" FontSize="11" VerticalAlignment="Center"/>
+          </StackPanel>
 
-          <TextBox Grid.Column="1" Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}" 
+          <TextBox x:Name="MainInput" Grid.Column="1" 
+                         Text="{Binding Content, UpdateSourceTrigger=PropertyChanged}" 
                          AcceptsReturn="True" TextWrapping="Wrap" BorderThickness="0" 
                          FontSize="14" Foreground="#2D3748" Padding="5"
                          MinWidth="200" Background="Transparent"/>
 
+          <Rectangle x:Name="PartingLine" Grid.Column="1" Height="2" Fill="#E2E8F0" Visibility="Collapsed" VerticalAlignment="Center"/>
+
           <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
-            <Button Content="&#xE74A;" FontFamily="Segoe MDL2 Assets" FontSize="12"
-            Click="MoveSectionUp_Click" Background="Transparent" 
-            Foreground="#4A5568" Margin="2,0" ToolTip="Move Up" Cursor="Hand"/>
-
-            <Button Content="&#xE74B;" FontFamily="Segoe MDL2 Assets" FontSize="12"
-            Click="MoveSectionDown_Click" Background="Transparent" 
-            Foreground="#4A5568" Margin="2,0" ToolTip="Move Down" Cursor="Hand"/>
-
-            <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14"
-            Click="RemoveSection_Click" Background="Transparent" 
-            Foreground="#E53E3E" Margin="10,0,0,0" Cursor="Hand" ToolTip="Delete"/>
+            <Button Content="&#xE74A;" FontFamily="Segoe MDL2 Assets" FontSize="12" Click="MoveSectionUp_Click" Background="Transparent" Foreground="#4A5568" Margin="2,0" ToolTip="Move Up"/>
+            <Button Content="&#xE74B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Click="MoveSectionDown_Click" Background="Transparent" Foreground="#4A5568" Margin="2,0" ToolTip="Move Down"/>
+            <Button Content="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" Click="RemoveSection_Click" Background="Transparent" Foreground="#E53E3E" Margin="10,0,0,0" ToolTip="Delete"/>
           </StackPanel>
-          
         </Grid>
       </Border>
+
+      <DataTemplate.Triggers>
+        <DataTrigger Binding="{Binding Type}" Value="H1">
+          <Setter TargetName="MainInput" Property="FontSize" Value="15"/>
+          <Setter TargetName="MainInput" Property="FontWeight" Value="SemiBold"/>
+          <Setter TargetName="TypeText" Property="Foreground" Value="#4C51BF"/>
+          <Setter TargetName="SectionBorder" Property="BorderThickness" Value="4,0,0,0"/>
+          <Setter TargetName="SectionBorder" Property="BorderBrush" Value="#667eea"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="H2">
+          <Setter TargetName="MainInput" Property="FontSize" Value="15"/>
+          <Setter TargetName="MainInput" Property="FontWeight" Value="SemiBold"/>
+          <Setter TargetName="SectionBorder" Property="BorderThickness" Value="4,0,0,0"/>
+          <Setter TargetName="SectionBorder" Property="BorderBrush" Value="#A3BFFA"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="H3">
+          <Setter TargetName="MainInput" Property="FontSize" Value="15"/>
+          <Setter TargetName="MainInput" Property="FontWeight" Value="SemiBold"/>
+          <Setter TargetName="SectionBorder" Property="BorderThickness" Value="4,0,0,0"/>
+          <Setter TargetName="MainInput" Property="Foreground" Value="#4A5568"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="Paragraph">
+          <Setter TargetName="MainInput" Property="MinHeight" Value="100"/>
+          <Setter TargetName="MainInput" Property="FontSize" Value="14"/>
+          <Setter TargetName="MainInput" Property="VerticalContentAlignment" Value="Top"/>
+          <Setter TargetName="TypeText" Property="Text" Value="DESCRIPTION"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="Code">
+          <Setter TargetName="SectionBorder" Property="Background" Value="#1A202C"/>
+          <Setter TargetName="MainInput" Property="Foreground" Value="#E2E8F0"/>
+          <Setter TargetName="MainInput" Property="FontFamily" Value="Consolas"/>
+          <Setter TargetName="MainInput" Property="FontSize" Value="13"/>
+          <Setter TargetName="TypeText" Property="Foreground" Value="#ECC94B"/>
+        </DataTrigger>
+        
+        <DataTrigger Binding="{Binding Type}" Value="Warning">
+          <Setter TargetName="SectionBorder" Property="Background" Value="#FFF5F5"/>
+          <Setter TargetName="SectionBorder" Property="BorderBrush" Value="#FEB2B2"/>
+          <Setter TargetName="IconText" Property="Visibility" Value="Visible"/>
+          <Setter TargetName="IconText" Property="Text" Value="&#xE7BA;"/>
+          <Setter TargetName="IconText" Property="Foreground" Value="#E53E3E"/>
+          <Setter TargetName="MainInput" Property="FontWeight" Value="SemiBold"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="Note">
+          <Setter TargetName="SectionBorder" Property="Background" Value="#FFFFF0"/>
+          <Setter TargetName="SectionBorder" Property="BorderBrush" Value="#F6E05E"/>
+          <Setter TargetName="IconText" Property="Visibility" Value="Visible"/>
+          <Setter TargetName="IconText" Property="Text" Value="&#xE946;"/>
+          <Setter TargetName="IconText" Property="Foreground" Value="#D69E2E"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="Separator">
+          <Setter TargetName="MainInput" Property="Visibility" Value="Collapsed"/>
+          <Setter TargetName="PartingLine" Property="Visibility" Value="Visible"/>
+          <Setter TargetName="SectionBorder" Property="Background" Value="Transparent"/>
+          <Setter TargetName="SectionBorder" Property="BorderThickness" Value="0"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="Tags">
+          <Setter TargetName="MainInput" Property="Foreground" Value="#667eea"/>
+          <Setter TargetName="MainInput" Property="FontStyle" Value="Italic"/>
+          <Setter TargetName="TypeText" Property="Text" Value="🏷 TAGS"/>
+        </DataTrigger>
+
+        <DataTrigger Binding="{Binding Type}" Value="Bullets">
+          <Setter TargetName="IconText" Property="Visibility" Value="Visible"/>
+          <Setter TargetName="IconText" Property="Text" Value="&#xE71D;"/>
+          <Setter TargetName="IconText" Property="Foreground" Value="#667eea"/>
+          <Setter TargetName="MainInput" Property="ToolTip" Value="First line is description, following lines are bullets."/>
+        </DataTrigger>
+      </DataTemplate.Triggers>
     </DataTemplate>
   </Window.Resources>
 
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="250"/>
+      <ColumnDefinition Width="300"/>
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
     <Border Grid.Column="0" Background="White" BorderBrush="#EEE" BorderThickness="0,0,1,0">
-      <Grid Margin="15">
+      <Grid>
         <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="220" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="PAGES" FontSize="12" FontWeight="Bold" Foreground="#888" Margin="0,0,0,10"/>
+        <Grid Grid.Row="0" Margin="15">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
 
-        <ListBox Grid.Row="1" ItemsSource="{Binding Pages}" SelectedItem="{Binding CurrentPage}" 
-                         BorderThickness="0" Background="Transparent">
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <StackPanel Orientation="Horizontal" Margin="5">
-                <TextBlock Text="" FontFamily="Segoe MDL2 Assets" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
-              </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+          <TextBlock Text="PAGES" FontSize="12" FontWeight="Bold" Foreground="#888" Margin="0,0,0,10"/>
 
-        <Button Grid.Row="2" Content="+ New Page" Background="#667eea" Foreground="White" Padding="10" BorderThickness="0"/>
+          <TreeView x:Name="PageTree" Grid.Row="1"
+          ItemsSource="{Binding Pages}" 
+          BorderThickness="0" 
+          Background="Transparent"
+          HorizontalContentAlignment="Stretch"
+          SelectedItemChanged="PageTree_SelectedItemChanged"
+          AllowDrop="True"
+          PreviewMouseMove="PageTree_PreviewMouseMove"
+          Drop="PageTree_Drop"
+          QueryContinueDrag="PageTree_QueryContinueDrag">
+
+            <TreeView.ItemContainerStyle>
+              <Style TargetType="TreeViewItem">
+                <Setter Property="IsExpanded" Value="True"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="Padding" Value="5,4"/>
+                <Setter Property="ContextMenu">
+                  <Setter.Value>
+                    <ContextMenu>
+                      <MenuItem Header="Delete Page" 
+                                  Command="{Binding DataContext.DeletePageCommand, ElementName=RootWindow}"
+                                  CommandParameter="{Binding}"/>
+                    </ContextMenu>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </TreeView.ItemContainerStyle>
+
+            <TreeView.ItemTemplate>
+              <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                <Grid Background="Transparent" Margin="0,0,5,0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="30"/>
+                  </Grid.ColumnDefinitions>
+
+                  <Border x:Name="IndicatorBorder" 
+                        Width="18" Height="18" 
+                        CornerRadius="9" 
+                        VerticalAlignment="Center" 
+                        HorizontalAlignment="Left">
+                    <TextBlock x:Name="IndicatorText" 
+                               FontSize="10" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"/>
+                  </Border>
+
+                  <TextBlock Grid.Column="1" Text="{Binding Title}" 
+                           VerticalAlignment="Center" FontSize="14" 
+                           Foreground="#2D3748"
+                           Margin="2,0,0,0"
+                           TextTrimming="CharacterEllipsis"/>
+
+                  <Button Grid.Column="2" Content="&#xE74D;" 
+                        FontFamily="Segoe MDL2 Assets" FontSize="12"
+                        Background="Transparent" BorderThickness="0" 
+                        Foreground="#CBD5E0" HorizontalAlignment="Right"
+                        Command="{Binding DataContext.DeletePageCommand, ElementName=RootWindow}"
+                        CommandParameter="{Binding}" Cursor="Hand">
+                    <Button.Style>
+                      <Style TargetType="Button">
+                        <Style.Triggers>
+                          <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="#E53E3E"/>
+                          </Trigger>
+                        </Style.Triggers>
+                      </Style>
+                    </Button.Style>
+                  </Button>
+                </Grid>
+
+                <HierarchicalDataTemplate.Triggers>
+                  <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                    <Setter TargetName="IndicatorBorder" Property="Background" Value="#FEE2E2"/>
+                    <Setter TargetName="IndicatorBorder" Property="BorderBrush" Value="#EF4444"/>
+                    <Setter TargetName="IndicatorBorder" Property="BorderThickness" Value="1"/>
+                    <Setter TargetName="IndicatorText" Property="Text" Value="H"/>
+                    <Setter TargetName="IndicatorText" Property="Foreground" Value="#B91C1C"/>
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding IsRoot}" Value="False">
+                    <Setter TargetName="IndicatorText" Property="Text" Value="↳"/>
+                    <Setter TargetName="IndicatorText" Property="Foreground" Value="#10B981"/>
+                    <Setter TargetName="IndicatorText" Property="FontSize" Value="16"/>
+                    <Setter TargetName="IndicatorText" Property="Margin" Value="0,-4,0,0"/>
+                    <Setter TargetName="IndicatorBorder" Property="Background" Value="Transparent"/>
+                  </DataTrigger>
+                </HierarchicalDataTemplate.Triggers>
+              </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+          <Button Grid.Row="2" Content="+ New Page" Command="{Binding AddPageCommand}" 
+                            Background="#667eea" Foreground="White" Padding="10" BorderThickness="0" Margin="0,10,0,0"/>
+        </Grid>
+
+        <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Background="#F0F0F0"/>
+
+        <Grid Grid.Row="2" Background="#F9FAFB">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <StackPanel Orientation="Horizontal" Margin="10,10,10,5">
+            <TextBlock Text="RECYCLE BIN" FontSize="11" FontWeight="Bold" Foreground="#A0AEC0"/>
+          </StackPanel>
+
+          <ListView Grid.Row="1" ItemsSource="{Binding DeletedPages}" Margin="5" BorderThickness="0" Background="Transparent">
+            <ListView.ItemTemplate>
+              <DataTemplate>
+                <Grid Width="260" Margin="0,2">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="8*"/>
+                    <ColumnDefinition Width="2*"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Text="{Binding Title}" VerticalAlignment="Center" FontSize="12" Foreground="#4A5568"/>
+                  <Button Grid.Column="1" 
+                                            Content="&#xE777;" 
+                                            FontFamily="Segoe MDL2 Assets" 
+                                            FontSize="12"
+                                            Background="Transparent" 
+                                            BorderThickness="0"
+                                            Foreground="#3182CE"
+                                            Cursor="Hand"
+                                            ToolTip="Restore to Root"
+                                            Command="{Binding DataContext.RestorePageCommand, ElementName=RootWindow}"
+                                            CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ListView.ItemTemplate>
+          </ListView>
+        </Grid>
       </Grid>
     </Border>
 
@@ -98,17 +298,18 @@
           <Button Content="H1" Command="{Binding AddSectionCommand}" CommandParameter="H1" Margin="3" Width="40"/>
           <Button Content="H2" Command="{Binding AddSectionCommand}" CommandParameter="H2" Margin="3" Width="40"/>
           <Button Content="H3" Command="{Binding AddSectionCommand}" CommandParameter="H3" Margin="3" Width="40"/>
-
-          <Separator Width="10" Background="Transparent"/>
-
-          <Button Content="Paragraph" Command="{Binding AddSectionCommand}" CommandParameter="Paragraph" Margin="3" Padding="10,5"/>
+          <Button Content="Description" Command="{Binding AddSectionCommand}" CommandParameter="Paragraph" Margin="3" Padding="10,5"/>
           <Button Content="Code Block" Command="{Binding AddSectionCommand}" CommandParameter="Code" Margin="3" Padding="10,5"/>
           <Button Content="Image Link" Command="{Binding AddSectionCommand}" CommandParameter="Image" Margin="3" Padding="10,5"/>
-
+          <Button Content="⚠ Warning" Command="{Binding AddSectionCommand}" CommandParameter="Warning" Background="#FFF5F5" Foreground="#C53030" Margin="3"/>
+          <Button Content="💡 Note" Command="{Binding AddSectionCommand}" CommandParameter="Note" Background="#FFFFF0" Foreground="#B7791F" Margin="3"/>
+          <Button Content="― Separator" Command="{Binding AddSectionCommand}" CommandParameter="Separator" Margin="3"/>
+          <Button Content="🏷 Tags" Command="{Binding AddSectionCommand}" CommandParameter="Tags" Margin="3"/>
+          <Button Content="• List" Command="{Binding AddSectionCommand}" CommandParameter="Bullets" Margin="3"/>
           <Separator Width="20" Background="Transparent"/>
-
+          
           <Button Content="PUBLISH TO IIS" Command="{Binding PublishCommand}" 
-            Background="#10B981" Foreground="White" FontWeight="Bold" Padding="20,8"/>
+                            Background="#10B981" Foreground="White" FontWeight="Bold" Padding="20,8"/>
         </StackPanel>
       </Border>
     </Grid>

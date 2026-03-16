@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using DocBuilder.Models;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
 using System.Windows;
-using DocBuilder.Models;
-using System.Text.Json; // For creating the navigation JSON
 
 namespace DocBuilder.Views
 {
@@ -14,41 +15,99 @@ namespace DocBuilder.Views
       InitializeComponent();
     }
 
-    private void NewProject_Click(object sender, RoutedEventArgs e)
+    private void ShowNewProjectConfig_Click(object sender, RoutedEventArgs e)
     {
-      // 1. Ask for Folder Location
-      var dialog = new System.Windows.Forms.FolderBrowserDialog
+      WelcomeView.Visibility = Visibility.Collapsed;
+      ConfigView.Visibility = Visibility.Visible;
+    }
+
+    private void BackToWelcome_Click(object sender, RoutedEventArgs e)
+    {
+      ConfigView.Visibility = Visibility.Collapsed;
+      WelcomeView.Visibility = Visibility.Visible;
+    }
+
+    private void BrowseDestination_Click(object sender, RoutedEventArgs e)
+    {
+      using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
       {
-        Description = "Select a folder to initialize your Documentation Project",
-        UseDescriptionForTitle = true
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+          TxtDestination.Text = dialog.SelectedPath;
+      }
+    }
+
+    private void BrowseLogo_Click(object sender, RoutedEventArgs e)
+    {
+      var dialog = new Microsoft.Win32.OpenFileDialog { Filter = "Image Files|*.png;*.jpg;*.svg" };
+      if (dialog.ShowDialog() == true) TxtLogoPath.Text = dialog.FileName;
+    }
+
+    private void FinalizeNewProject_Click(object sender, RoutedEventArgs e)
+    {
+      if (string.IsNullOrWhiteSpace(TxtDestination.Text))
+      {
+        System.Windows.MessageBox.Show("Please select a destination folder.");
+        return;
+      }
+
+      string rootPath = TxtDestination.Text;
+      string docsPath = Path.Combine(rootPath, "Docs");
+      string imgPath = Path.Combine(rootPath, "img");
+
+      if (!Directory.Exists(docsPath)) Directory.CreateDirectory(docsPath);
+      if (!Directory.Exists(imgPath)) Directory.CreateDirectory(imgPath);
+
+      string relativeLogoPath = "";
+
+      // 1. Copy the logo
+      if (!string.IsNullOrWhiteSpace(TxtLogoPath.Text) && File.Exists(TxtLogoPath.Text))
+      {
+        string extension = Path.GetExtension(TxtLogoPath.Text);
+        string destinationFileName = "logo" + extension;
+        string fullDestinationPath = Path.Combine(imgPath, destinationFileName);
+
+        try
+        {
+          File.Copy(TxtLogoPath.Text, fullDestinationPath, true);
+          relativeLogoPath = "img/" + destinationFileName;
+        }
+        catch (Exception ex)
+        {
+          System.Windows.MessageBox.Show("Could not copy logo: " + ex.Message);
+        }
+      }
+
+      // 2. Handle the Template (Skeleton Creation)
+      // IMPORTANT: This was missing in your snippet!
+      if (ChkUseTemplate.IsChecked == true)
+      {
+        // This calls the external class we created to generate index.json
+        DocBuilder.Services.StarterTemplate.CreateGettingStarted(docsPath);
+      }
+
+      // 3. Save Master Manifest (navigation.json)
+      var manifest = new
+      {
+        ProjectName = TxtProjectName.Text,
+        LogoPath = relativeLogoPath,
+        Created = DateTime.Now,
+        PageFiles = ChkUseTemplate.IsChecked == true ? new[] { "index.html" } : new string[] { }
       };
 
-      if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+      File.WriteAllText(Path.Combine(rootPath, "navigation.json"),
+          JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
+
+      // 4. Set Result Settings for the MainViewModel
+      ResultSettings = new ProjectSettings
       {
-        string rootPath = dialog.SelectedPath;
+        IsExistingProject = false,
+        BrandName = TxtProjectName.Text,
+        LogoPath = relativeLogoPath,
+        OutputPath = docsPath,
+        HomeFileName = "index.html"
+      };
 
-        // 2. Create the Structure: /Docs/ folder
-        string docsPath = Path.Combine(rootPath, "Docs");
-        if (!Directory.Exists(docsPath)) Directory.CreateDirectory(docsPath);
-
-        // 3. Create the Structure: navigation.json
-        string jsonPath = Path.Combine(rootPath, "navigation.json");
-        if (!File.Exists(jsonPath))
-        {
-          var initialNav = new { ProjectName = "New Project", Pages = new string[] { "index.html" } };
-          File.WriteAllText(jsonPath, JsonSerializer.Serialize(initialNav, new JsonSerializerOptions { WriteIndented = true }));
-        }
-
-        // 4. Set Settings and Close
-        ResultSettings = new ProjectSettings
-        {
-          IsExistingProject = false,
-          OutputPath = docsPath, // We publish inside the Docs folder
-          HomeFileName = IsIndexHome.IsChecked == true ? "index.html" : "home.html"
-        };
-
-        this.DialogResult = true;
-      }
+      this.DialogResult = true;
     }
 
     private void OpenExisting_Click(object sender, RoutedEventArgs e)

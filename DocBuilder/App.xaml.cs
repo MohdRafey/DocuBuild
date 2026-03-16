@@ -23,18 +23,12 @@ namespace DocBuilder
 
       if (setupWindow.ShowDialog() == true)
       {
-        var mainVM = new DocBuilder.WPF.ViewModels.MainViewModel();
+        var mainVM = new MainViewModel();
         mainVM.Settings = setupWindow.ResultSettings;
 
-        if (mainVM.Settings.IsExistingProject)
-        {
-          // CALL THE LOAD LOGIC
-          LoadProjectData(mainVM);
-        }
-        else
-        {
-          mainVM.Pages.Add(new DocPage { Title = "Home", FileName = mainVM.Settings.HomeFileName });
-        }
+        // Load project data (this works for both New and Existing)
+        // If it's a new project without a template, LoadProjectData will find 0 PageFiles and stay empty.
+        LoadProjectData(mainVM);
 
         var mainWindow = new MainWindow { DataContext = mainVM };
         mainWindow.Show();

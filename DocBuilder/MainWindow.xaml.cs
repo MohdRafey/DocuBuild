@@ -69,5 +69,112 @@ namespace DocBuilder
         }
       }
     }
+
+    private System.Windows.Point _startPoint;
+
+    private void PageTree_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+      if (e.LeftButton == MouseButtonState.Pressed)
+      {
+        System.Windows.Point mousePos = e.GetPosition(null);
+        Vector diff = _startPoint - mousePos;
+
+        if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+            Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+        {
+          System.Windows.Controls.TreeView? treeView = sender as System.Windows.Controls.TreeView;
+          TreeViewItem treeViewItem = FindAnchestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+
+          if (treeViewItem != null)
+          {
+            DocPage draggedItem = (DocPage)treeViewItem.Header;
+            System.Windows.DataObject dragData = new System.Windows.DataObject("DocPage", draggedItem);
+            DragDrop.DoDragDrop(treeViewItem, dragData, System.Windows.DragDropEffects.Move);
+          }
+        }
+      }
+    }
+
+    private void PageTree_Drop(object sender, System.Windows.DragEventArgs e)
+    {
+      if (e.Data.GetDataPresent("DocPage"))
+      {
+        DocPage draggedPage = e.Data.GetData("DocPage") as DocPage;
+        TreeViewItem targetItem = FindAnchestor<TreeViewItem>((DependencyObject)e.OriginalSource);
+        DocPage targetPage = targetItem?.Header as DocPage;
+        var vm = (MainViewModel)this.DataContext;
+
+        if (draggedPage == null || draggedPage == targetPage) return;
+
+        // --- PRE-PROCESSING: Prevent nesting recursion ---
+        // If the dragged page is about to become a child, it cannot keep its own children.
+        if (targetPage != null && draggedPage.Children.Count > 0)
+        {
+          var result = System.Windows.MessageBox.Show(
+              "Moving this category into another page will move its sub-pages back to the top level. Continue?",
+              "Flatten Hierarchy",
+              System.Windows.MessageBoxButton.YesNo);
+
+          if (result == System.Windows.MessageBoxResult.No) return;
+
+          // Evict children to Root before moving the parent
+          var childrenToEvict = draggedPage.Children.ToList();
+          foreach (var child in childrenToEvict)
+          {
+            draggedPage.Children.Remove(child);
+            child.IsRoot = true;
+            vm.Pages.Add(child);
+          }
+        }
+
+        // --- EXECUTION PHASE ---
+        vm.RemovePageFromHierarchy(draggedPage);
+
+        // Scenario A: Move to Root
+        if (targetPage == null)
+        {
+          draggedPage.IsRoot = true;
+          vm.Pages.Add(draggedPage);
+        }
+        else
+        {
+          // Scenario B: Nest into Target
+          draggedPage.IsRoot = false;
+          targetPage.Children.Add(draggedPage);
+          targetItem.IsExpanded = true;
+        }
+
+        e.Handled = true;
+      }
+    }
+
+    private static T FindAnchestor<T>(DependencyObject current) where T : DependencyObject
+    {
+      do
+      {
+        if (current is T) return (T)current;
+        current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+      }
+      while (current != null);
+      return null;
+    }
+
+    private void PageTree_QueryContinueDrag(object sender, System.Windows.QueryContinueDragEventArgs e)
+    {
+      // If the Escape key is pressed, cancel the drag operation
+      if (e.EscapePressed)
+      {
+        e.Action = System.Windows.DragAction.Cancel;
+      }
+    }
+
+    private void PageTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+      var vm = (MainViewModel)this.DataContext;
+      if (e.NewValue is DocPage selectedPage)
+      {
+        vm.CurrentPage = selectedPage;
+      }
+    }
   }
 }
