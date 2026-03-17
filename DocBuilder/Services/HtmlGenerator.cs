@@ -19,6 +19,8 @@ namespace DocBuilder.WPF.Services
 
       _settings = settings;
 
+
+      CopyThemeFiles(settings.ThemeName, settings.OutputPath);
       // Flat list for easy navigation lookup
       var allPagesList = pages.ToList();
 
@@ -43,13 +45,48 @@ namespace DocBuilder.WPF.Services
         File.WriteAllText(Path.Combine(settings.OutputPath, page.FileName), finalHtml);
       }
     }
+    private void CopyThemeFiles(string selectedThemeName, string outputPath)
+    {
+      try
+      {
+        // 1. Source Path (Inside bin/Debug/Resources/ThemeTemplate/ModernBlue)
+        string sourcePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                                         "Resources", "ThemeTemplates", selectedThemeName);
+
+        // 2. Destination Path (OutputFolder/css)
+        string destPath = Path.Combine(outputPath, "css");
+
+        // Create destination if it doesn't exist
+        if (!Directory.Exists(destPath))
+          Directory.CreateDirectory(destPath);
+
+        if (Directory.Exists(sourcePath))
+        {
+          var files = Directory.GetFiles(sourcePath, "*.css");
+          foreach (var file in files)
+          {
+            string destFile = Path.Combine(destPath, Path.GetFileName(file));
+            File.Copy(file, destFile, true);
+          }
+        }
+        else
+        {
+          // This will show up in your 'Output' window in Visual Studio
+          System.Diagnostics.Debug.WriteLine($"SOURCE NOT FOUND: {sourcePath}");
+        }
+      }
+      catch (Exception ex)
+      {
+        System.Diagnostics.Debug.WriteLine($"THEME COPY ERROR: {ex.Message}");
+      }
+    }
 
     private string BuildLogoHtml(string relativePath)
     {
       if (string.IsNullOrWhiteSpace(relativePath)) return "";
       // Assuming images are moved to an /img folder in output
       return $@"<div class='header-brand'>
-                        <img src='..img/{Path.GetFileName(relativePath)}' alt='Logo' />
+                        <img src='../img/{Path.GetFileName(relativePath)}' alt='Logo' />
                       </div>";
     }
 
@@ -105,17 +142,17 @@ namespace DocBuilder.WPF.Services
           case SectionType.Separator: sb.Append("<hr class='section-sep'/>"); break;
 
           case SectionType.Warning:
+            // Clean HTML: No hardcoded emoji
             sb.Append($@"<div class='alert alert-warning'>
-                                        <span class='alert-icon'>⚠️</span>
-                                        <div class='alert-body'>{s.Content}</div>
-                                      </div>");
+                                <div class='alert-body'>{s.Content}</div>
+                             </div>");
             break;
 
           case SectionType.Note:
+            // Clean HTML: No hardcoded emoji
             sb.Append($@"<div class='alert alert-note'>
-                                        <span class='alert-icon'>💡</span>
-                                        <div class='alert-body'>{s.Content}</div>
-                                      </div>");
+                                <div class='alert-body'>{s.Content}</div>
+                             </div>");
             break;
 
           case SectionType.Bullets:
@@ -155,7 +192,11 @@ namespace DocBuilder.WPF.Services
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>{{PageTitle}} - {{BrandName}}</title>
-    <link rel='stylesheet' href='Themes/active-theme.css'>
+    <link rel='stylesheet' href='css/variables.css'>
+    <link rel='stylesheet' href='css/header.css'>
+    <link rel='stylesheet' href='css/sidebar.css'>
+    <link rel='stylesheet' href='css/content.css'>
+    <link rel='stylesheet' href='css/components.css'>
 </head>
 <body>
     <header class='doc-header'>
@@ -164,7 +205,7 @@ namespace DocBuilder.WPF.Services
             <h1>{{BrandName}}</h1>
         </div>
         <nav class='top-right-nav'>
-            <a href='index.html' class='home-btn'>🏠 Home</a>
+            <a href='index.html' class='home-btn'>Home</a>
         </nav>
     </header>
 

@@ -1,0 +1,50 @@
+﻿/* Modern-Dark.css */
+:root {
+  --primary-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --primary-color: #818cf8;
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --header-bg: #0b0f1a;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --border-radius: 12px;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  /* Alerts (Standardized Names) */
+  --alert-warn-bg: #422006;
+  --alert-warn-border: #fbbf24;
+  --alert-warn-text: #fef3c7;
+  --alert-note-bg: #1e3a8a;
+  --alert-note-border: #60a5fa;
+  --alert-note-text: #dbeafe;
+  /* Code Blocks (Standardized Names) */
+  --code-bg: #0b0f1a;
+  --code-text: #e2e8f0;
+  --code-header-bg: #334155;
+  --code-header-text: #94a3b8;
+  --code-inline-bg: #334155;
+  --code-inline-text: #f472b6;
+  --sep-color: #334155;
+}
+
+html {
+  overflow-y: scroll;
+  background: var(--bg-color);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  color: var(--text-main);
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}

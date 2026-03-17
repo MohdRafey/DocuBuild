@@ -1,0 +1,50 @@
+﻿/* header.css - ModernDark */
+
+.doc-header {
+  background: var(--header-bg); /* #0b0f1a */
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.header-brand h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* The Home Button - Clean Pill, No Underline */
+.top-right-nav .home-btn {
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 8px 24px;
+  border-radius: 50px; /* Full pill shape */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+  .top-right-nav .home-btn:hover {
+    color: #ffffff;
+    background: rgba(129, 140, 248, 0.08);
+    /* Use a solid colored border or glow instead of an underline */
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(129, 140, 248, 0.2), inset 0 0 10px rgba(129, 140, 248, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .top-right-nav .home-btn:active {
+    transform: translateY(0);
+    background: rgba(129, 140, 248, 0.15);
+  }

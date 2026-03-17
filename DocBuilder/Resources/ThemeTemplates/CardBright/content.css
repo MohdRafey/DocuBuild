@@ -1,0 +1,70 @@
+﻿/* content.css */
+.main-wrapper {
+  width: 100%;
+  max-width: var(--max-width);
+  display: flex;
+  gap: 20px;
+  align-items: start;
+}
+
+/* content.css */
+
+.doc-container {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+  /* Removed position: relative because we aren't using absolute positioning anymore */
+}
+
+.breadcrumb {
+  /* This ensures the breadcrumb sits naturally above the card */
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 16px; /* Space between breadcrumb and the card below */
+  padding-left: 4px; /* Slight offset to align with the text inside the card */
+}
+
+.doc-card {
+  flex-grow: 1;
+  background: var(--card-bg);
+  padding: 32px; /* Standard internal padding */
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(11, 28, 53, 0.04);
+}
+
+.doc-title {
+  margin: 0 0 20px 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0b1724;
+}
+
+footer {
+  margin-top: 40px;
+  padding: 24px 0;
+  border-top: 1px solid rgba(11, 28, 53, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.01em;
+}
+
+  /* Optional: Add a subtle 'Built with' badge style */
+  footer::after {
+    content: "v1.0.4"; /* Versioning or status */
+    font-family: ui-monospace, monospace;
+    background: rgba(11, 28, 53, 0.04);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+  }
+
+  footer b {
+    color: var(--sidebar-bg); /* Use the deep slate color for the brand name */
+    font-weight: 600;
+  }

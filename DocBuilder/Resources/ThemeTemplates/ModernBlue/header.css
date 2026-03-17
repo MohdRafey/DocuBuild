@@ -1,0 +1,39 @@
+﻿/* Modern-Blue.css header.css */
+.doc-header {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+  .header-brand img {
+    height: 40px;
+    width: auto;
+  }
+
+.top-right-nav .home-btn {
+  color: white;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+  .top-right-nav .home-btn:hover {
+    background: white;
+    color: var(--primary-color);
+  }

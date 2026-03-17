@@ -40,18 +40,14 @@ namespace DocBuilder.Views
     //}
     private void LoadThemes()
     {
-      string placeholderPath = "pack://application:,,,/Resources/placeholder.png";
+      // Get the master list
+      var themeList = DocBuilder.Services.ThemeRegistry.GetAvailableThemes();
 
-      Themes = new ObservableCollection<ThemeItem>
-    {
-        new ThemeItem { Name = "Modern Blue", CssFileName = "modern-blue.css", ScreenshotPath = placeholderPath, IsSelected = true },
-        new ThemeItem { Name = "Dark Forest", CssFileName = "dark-forest.css", ScreenshotPath = placeholderPath },
-        new ThemeItem { Name = "Midnight", CssFileName = "midnight.css", ScreenshotPath = placeholderPath },
-        new ThemeItem { Name = "Cyberpunk", CssFileName = "cyberpunk.css", ScreenshotPath = placeholderPath },
-        new ThemeItem { Name = "Clean White", CssFileName = "clean-white.css", ScreenshotPath = placeholderPath },
-        new ThemeItem { Name = "Slate Grey", CssFileName = "slate-grey.css", ScreenshotPath = placeholderPath }
-    };
+      // Set the default selection for a NEW project
+      if (themeList.Count > 0)
+        themeList[0].IsSelected = true;
 
+      Themes = new ObservableCollection<ThemeItem>(themeList);
       ThemeItemsControl.ItemsSource = Themes;
       UpdateThemeLabel();
     }
@@ -120,43 +116,20 @@ namespace DocBuilder.Views
         return;
       }
 
+      // 1. Prepare Paths
       string rootPath = TxtDestination.Text;
       string docsPath = Path.Combine(rootPath, "Docs");
       string imgPath = Path.Combine(rootPath, "img");
-      string themePath = Path.Combine(docsPath, "Themes");
 
+      // Create directories
       if (!Directory.Exists(docsPath)) Directory.CreateDirectory(docsPath);
       if (!Directory.Exists(imgPath)) Directory.CreateDirectory(imgPath);
-      if (!Directory.Exists(themePath)) Directory.CreateDirectory(themePath);
 
+      // 2. Gather Data for Manifest and ResultSettings
+      var selectedTheme = Themes.FirstOrDefault(t => t.IsSelected);
       string relativeLogoPath = "";
 
-      // --- THEME COPY LOGIC ---
-      var selectedTheme = Themes.FirstOrDefault(t => t.IsSelected);
-
-      if (selectedTheme != null)
-      {
-        // Sanity check: Ensure the filename isn't null or empty
-        if (string.IsNullOrEmpty(selectedTheme.CssFileName))
-        {
-          System.Windows.MessageBox.Show($"Theme '{selectedTheme.Name}' is missing its CSS filename definition.");
-          return;
-        }
-
-        string sourceCss = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Themes", selectedTheme.CssFileName);
-        string destCss = Path.Combine(themePath, "active-theme.css");
-
-        if (File.Exists(sourceCss))
-        {
-          File.Copy(sourceCss, destCss, true);
-        }
-        else
-        {
-          System.Windows.MessageBox.Show("Source CSS file not found at: " + sourceCss);
-        }
-      }
-
-      // 1. Copy the logo
+      // Copy the logo if it exists
       if (!string.IsNullOrWhiteSpace(TxtLogoPath.Text) && File.Exists(TxtLogoPath.Text))
       {
         string extension = Path.GetExtension(TxtLogoPath.Text);
@@ -174,19 +147,19 @@ namespace DocBuilder.Views
         }
       }
 
-      // 2. Handle the Template (Skeleton Creation)
-      // IMPORTANT: This was missing in your snippet!
+      // 3. Handle Template Skeleton
       if (ChkUseTemplate.IsChecked == true)
       {
-        // This calls the external class we created to generate index.json
         DocBuilder.Services.StarterTemplate.CreateGettingStarted(docsPath);
       }
 
-      // 3. Save Master Manifest (navigation.json)
+      // 4. Save Master Manifest (navigation.json)
+      // We add ThemeName here too so it's remembered when the project is re-opened!
       var manifest = new
       {
         ProjectName = TxtProjectName.Text,
         LogoPath = relativeLogoPath,
+        ThemeName = selectedTheme?.Name ?? "ModernBlue",
         Created = DateTime.Now,
         PageFiles = ChkUseTemplate.IsChecked == true ? new[] { "index.html" } : new string[] { }
       };
@@ -194,14 +167,15 @@ namespace DocBuilder.Views
       File.WriteAllText(Path.Combine(rootPath, "navigation.json"),
           JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
 
-      // 4. Set Result Settings for the MainViewModel
+      // 5. FINAL ResultSettings Initialization (The Single Source of Truth)
       ResultSettings = new ProjectSettings
       {
         IsExistingProject = false,
         BrandName = TxtProjectName.Text,
         LogoPath = relativeLogoPath,
         OutputPath = docsPath,
-        HomeFileName = "index.html"
+        HomeFileName = "index.html",
+        ThemeName = selectedTheme?.Name ?? "ModernBlue" // Defaults to ModernBlue if null
       };
 
       this.DialogResult = true;

@@ -1,0 +1,82 @@
+﻿/*ModernBlue components.css */
+/* Alerts */
+.alert {
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  border-left: 5px solid;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.alert-warning {
+  background-color: #fff8e1;
+  border-left-color: #ffc107;
+  color: #856404;
+}
+
+.alert-note {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #0d47a1;
+}
+
+/* Bullets */
+.doc-content ul {
+  list-style: none;
+  margin: 1.5rem 0 1.5rem 1rem;
+}
+
+  .doc-content ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+    .doc-content ul li::before {
+      content: "•";
+      color: var(--primary-color);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+/* Code Blocks */
+pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-family: 'Fira Code', monospace;
+}
+
+code {
+  background: #fdf0f5;
+  color: #e83e8c;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.code-header {
+  background: #333;
+  color: #aaa;
+  padding: 0.5rem 1rem;
+  border-radius: 8px 8px 0 0;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: -1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Separator */
+hr.section-sep {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+  margin: 3rem 0;
+}

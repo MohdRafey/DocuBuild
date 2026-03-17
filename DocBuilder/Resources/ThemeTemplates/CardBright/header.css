@@ -1,0 +1,92 @@
+﻿/* header.css */
+.doc-header {
+  position: sticky;
+  top: 10px; /* Added a small gap from top for the 'floating' look */
+  width: 100%;
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, var(--card-bg), #fbfdff);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(11, 28, 53, 0.04);
+  z-index: 1000;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-brand img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  border-radius: 10px;
+  padding: 5px;
+  box-shadow: 0 6px 14px rgba(11, 108, 246, 0.14);
+}
+
+.doc-header h1 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 700;
+  color: #0b1724;
+}
+
+/* header.css */
+
+.top-right-nav {
+  display: flex;
+  align-items: center;
+}
+
+.home-btn {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0b1724; /* Dark slate text to match brand */
+  padding: 6px 14px 6px 8px; /* Less padding on left to hug the icon */
+  background: var(--card);
+  border-radius: 10px;
+  border: 1px solid rgba(11, 28, 53, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow);
+}
+
+  /* The "Avatar Style" Icon */
+  .home-btn::before {
+    content: "H"; /* Using H as a mark, similar to an avatar initial */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; /* Slightly smaller than the main logo (44px) */
+    height: 32px;
+    background: var(--home-gradient);
+    color: var(--home-text);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 8px; /* Matching the avatar's radius */
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px var(--home-border);
+  }
+
+  .home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(11, 28, 53, 0.12);
+    border-color: rgba(255, 122, 122, 0.3);
+  }
+
+  .home-btn:active {
+    transform: translateY(0);
+  }

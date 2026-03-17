@@ -1,0 +1,68 @@
+﻿/* components.css */
+
+/* Generic Alert Wrapper */
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+  margin: 20px 0;
+  display: flex;
+  align-items: flex-start; /* Aligns icon to top of text */
+  gap: 14px;
+  border: 1px solid transparent;
+}
+
+.alert-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0; /* Prevents icon from squishing */
+}
+
+.alert-body {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Warning Style */
+.alert-warning {
+  background: linear-gradient(180deg, #fffcf5, #fff3db);
+  border: 1px solid #ffeeba;
+  border-left: 4px solid #ffb86b;
+  color: #856404;
+}
+
+/* Note Style */
+.alert-note {
+  background: linear-gradient(180deg, #f0f7ff, #e1effe);
+  border: 1px solid #d1e9ff;
+  border-left: 4px solid var(--accent);
+  color: #004085;
+}
+
+/* Code block headers */
+.code-container {
+  margin: 20px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.code-header {
+  background: #1a202c;
+  padding: 8px 16px;
+  color: #a0aec0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+pre {
+  background: #0b1220;
+  color: #d7e9ff;
+  padding: 16px;
+  margin: 0; /* Remove margin so it fits code-container */
+  overflow: auto;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+}

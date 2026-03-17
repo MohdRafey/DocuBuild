@@ -10,6 +10,7 @@ namespace DocBuilder.Models
     public string SecondaryColor { get; set; } = "#764ba2";
     public string FooterText { get; set; } = "© 2026 Internal Docs";
 
+    public string ThemeName { get; set; }
     // Paths & Logic
     public string OutputPath { get; set; } = @"D:\DocBuilder\Docs";
 

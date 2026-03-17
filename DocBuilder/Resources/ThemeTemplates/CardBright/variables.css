@@ -1,0 +1,40 @@
+﻿/* variables.css */
+:root {
+  /* Colors from your source */
+
+  --bg-gradient: linear-gradient(180deg, #f5f7fa, #eef3fb 60%);
+  --card-bg: #ffffff;
+  --accent: #0b6cf6;
+  --accent-light: #2bb7ff;
+  --muted: #6b7280;
+  --sidebar-bg: linear-gradient(180deg, rgba(15, 23, 36, 0.98), rgba(11, 16, 28, 0.98));
+  --glass: rgba(255, 255, 255, 0.6);
+  --radius: 12px;
+  --shadow: 0 6px 18px rgba(11, 28, 53, 0.08);
+  --sidebar-shadow: 0 12px 30px rgba(2, 6, 23, 0.45);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --max-width: 1200px;
+  --home-gradient: linear-gradient(135deg, #ffb86b, #ff7a7a);
+  --home-text: #ffffff;
+  --home-border: rgba(255, 122, 122, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg-gradient);
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column; /* Stack header on top of wrapper */
+  align-items: center; /* Center everything horizontally */
+  min-height: 100vh;
+}
