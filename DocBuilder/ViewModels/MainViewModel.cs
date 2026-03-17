@@ -1,4 +1,5 @@
-﻿using DocBuilder.Models;
+﻿using DocBuilder.Helpers;
+using DocBuilder.Models;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Input;
@@ -23,14 +24,30 @@ namespace DocBuilder.WPF.ViewModels
     public RelayCommand AddPageCommand { get; }
     public ICommand DeletePageCommand { get; }
     public ICommand RestorePageCommand { get; }
+
+    private bool _isDirty;
+    public bool IsDirty
+    {
+      get => _isDirty;
+      set
+      {
+        if (_isDirty != value)
+        {
+          _isDirty = value;
+          OnPropertyChanged(nameof(IsDirty));
+          // Optional: Update the Window Title to show an asterisk *
+        }
+      }
+    }
+
     public MainViewModel()
     {
       Settings = new ProjectSettings();
       Pages = new ObservableCollection<DocPage>();
+      Pages.CollectionChanged += (s, e) => IsDirty = true;
 
-      // REMOVED: Dummy data logic that was adding "firstPage" automatically.
-      // The collection should now be empty until populated by App.xaml.cs 
-      // using the data passed from SetupWindow.
+      DeletedPages = new ObservableCollection<DocPage>();
+      DeletedPages.CollectionChanged += (s, e) => IsDirty = true;
 
       AddSectionCommand = new RelayCommand(param =>
       {
@@ -74,12 +91,88 @@ namespace DocBuilder.WPF.ViewModels
           });
         }
       });
-
       PublishCommand = new RelayCommand(o => PublishAll());
       AddPageCommand = new RelayCommand(o => ExecuteAddPage());
       DeletePageCommand = new RelayCommand<DocPage>(ExecuteDeletePage);
       RestorePageCommand = new RelayCommand<DocPage>(ExecuteRestorePage);
     }
+
+    #region Loading Existing project
+    public void LoadProject(string navigationJsonPath)
+    {
+      try
+      {
+        // 1. Clear current state to avoid mixing projects
+        Pages.Clear();
+        DeletedPages.Clear();
+
+        if (!File.Exists(navigationJsonPath)) return;
+
+        // 2. Read the Manifest
+        string jsonContent = File.ReadAllText(navigationJsonPath);
+        var manifest = System.Text.Json.JsonSerializer.Deserialize<ProjectManifest>(jsonContent);
+
+        // 3. Set the directory context (The folder containing the JSON sidecars)
+        string docsFolder = Path.Combine(Path.GetDirectoryName(navigationJsonPath), "Docs");
+
+        // 4. Load the structure recursively
+        foreach (var pageRef in manifest.Structure)
+        {
+          var loadedRootPage = LoadPageWithChildren(pageRef.FileName, docsFolder);
+          if (loadedRootPage != null)
+          {
+            Pages.Add(loadedRootPage);
+          }
+        }
+
+        // 5. Success! The project is now "Clean" because it matches the disk
+        IsDirty = false;
+
+        // Auto-select the first page if available
+        CurrentPage = Pages.FirstOrDefault();
+      }
+      catch (Exception ex)
+      {
+        System.Windows.MessageBox.Show($"Failed to load project: {ex.Message}");
+      }
+    }
+
+    private DocPage LoadPageWithChildren(string fileName, string docsFolder)
+    {
+      // Construct path to the individual page JSON (e.g., index.json)
+      string jsonName = Path.GetFileNameWithoutExtension(fileName) + ".json";
+      string fullPath = Path.Combine(docsFolder, jsonName);
+
+      if (!File.Exists(fullPath)) return null;
+
+      // Load the page data
+      string pageJson = File.ReadAllText(fullPath);
+      var page = System.Text.Json.JsonSerializer.Deserialize<DocPage>(pageJson);
+
+      if (page != null)
+      {
+        // IMPORTANT: Attach the dirty-tracking observers
+        WatchPageSections(page);
+
+        // Recursively load children if they exist
+        if (page.Children != null && page.Children.Count > 0)
+        {
+          // We need to reload children from THEIR sidecar files to get their SECTIONS
+          for (int i = 0; i < page.Children.Count; i++)
+          {
+            var childFileName = page.Children[i].FileName;
+            var fullyLoadedChild = LoadPageWithChildren(childFileName, docsFolder);
+            if (fullyLoadedChild != null)
+            {
+              page.Children[i] = fullyLoadedChild;
+            }
+          }
+        }
+      }
+
+      return page;
+    }
+    #endregion
 
     private void PublishAll()
     {
@@ -164,6 +257,8 @@ namespace DocBuilder.WPF.ViewModels
         // We convert back to ObservableCollection if your generator strictly requires it
         generator.GenerateProject(new ObservableCollection<DocPage>(allPagesToGenerate), Settings);
 
+        this.IsDirty = false;
+
         // 4. Success UI
         var result = System.Windows.MessageBox.Show(
             $"Successfully published to {Settings.OutputPath}!",
@@ -211,9 +306,11 @@ namespace DocBuilder.WPF.ViewModels
                 new DocSection { Type = SectionType.Paragraph, Content = "Start writing your content here..." }
             }
         };
-
+        WatchPageSections(newPage);
         Pages.Add(newPage);
         CurrentPage = newPage;
+
+        IsDirty = true;
       }
     }
 
@@ -235,9 +332,12 @@ namespace DocBuilder.WPF.ViewModels
 
       if (File.Exists(sourcePath)) File.Move(sourcePath, destPath, true);
 
-      // 3. Permanent HTML deletion (optional, keeps published site clean)
+      // 3. Permanent HTML deletion
       string htmlPath = Path.Combine(Settings.OutputPath, page.FileName);
       if (File.Exists(htmlPath)) File.Delete(htmlPath);
+
+      // 4. SET DIRTY FLAG
+      IsDirty = true;
     }
 
     private void ExecuteRestorePage(DocPage page)
@@ -252,6 +352,8 @@ namespace DocBuilder.WPF.ViewModels
       // "Orphan" errors if the original parent was also deleted or moved.
       page.IsRoot = true;
       Pages.Add(page);
+
+      IsDirty = true;
     }
 
     public void RemovePageFromHierarchy(DocPage pageToRemove)
@@ -272,6 +374,48 @@ namespace DocBuilder.WPF.ViewModels
           return;
         }
       }
+    }
+
+    public void WatchPageSections(DocPage page)
+    {
+      if (page == null) return;
+
+      // Listen to the collection itself (Adding/Removing sections)
+      page.Sections.CollectionChanged += (s, e) =>
+      {
+        IsDirty = true;
+        // If new sections are added, we need to watch their internal Content too
+        if (e.NewItems != null)
+        {
+          foreach (DocSection section in e.NewItems)
+          {
+            section.PropertyChanged += Section_PropertyChanged;
+          }
+        }
+      };
+
+      // Listen to existing sections
+      foreach (var section in page.Sections)
+      {
+        section.PropertyChanged += Section_PropertyChanged;
+      }
+    }
+
+    private void Section_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+      if (e.PropertyName == nameof(DocSection.Content))
+      {
+        IsDirty = true;
+      }
+    }
+
+    public void UpdateSettings(ProjectSettings newSettings)
+    {
+      this.Settings = newSettings;
+      this.IsDirty = true;
+
+      // The ViewModel CAN call this because it inherits from ViewModelBase
+      OnPropertyChanged(nameof(Settings));
     }
 
   }

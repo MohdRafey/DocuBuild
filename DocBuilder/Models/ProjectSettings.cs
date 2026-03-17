@@ -31,6 +31,11 @@ namespace DocBuilder.Models
     // Optional: Add a project name if you want to support multiple saved projects
     public string ProjectName { get; set; } = "New Documentation Project";
 
-    public string LogoPath { get; set; }
+    public string? LogoPath { get; set; }
+
+    /// <summary>
+    /// The full path to the navigation.json file for existing projects.
+    /// </summary>
+    public string? ManifestPath { get; set; }
   }
 }

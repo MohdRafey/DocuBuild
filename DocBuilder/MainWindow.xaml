@@ -9,6 +9,13 @@
         Background="#F5F5F7">
 
   <Window.Resources>
+    <DropShadowEffect x:Key="DropShadowEffect" 
+                      BlurRadius="15" 
+                      Direction="270" 
+                      RenderingBias="Quality" 
+                      ShadowDepth="2" 
+                      Opacity="0.15" 
+                      Color="Black" />
     <Style x:Key="ToolbarBtn" TargetType="Button">
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
@@ -155,7 +162,7 @@
           <Setter TargetName="MainInput" Property="FontSize" Value="13"/>
           <Setter TargetName="TypeText" Property="Foreground" Value="#ECC94B"/>
         </DataTrigger>
-        
+
         <DataTrigger Binding="{Binding Type}" Value="Warning">
           <Setter TargetName="SectionBorder" Property="Background" Value="#FFF5F5"/>
           <Setter TargetName="SectionBorder" Property="BorderBrush" Value="#FEB2B2"/>
@@ -197,29 +204,72 @@
   </Window.Resources>
 
   <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="300"/>
-      <ColumnDefinition Width="*"/>
-    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="50"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
 
-    <Border Grid.Column="0" Background="White" BorderBrush="#EEE" BorderThickness="0,0,1,0">
-      <Grid>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="*" />
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="220" />
-        </Grid.RowDefinitions>
+    <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Panel.ZIndex="10">
+      <DockPanel Margin="15,0">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+          <TextBlock Text="DocBuilder" VerticalAlignment="Center" FontWeight="Bold" Foreground="#667eea" Margin="0,0,20,0" FontSize="16"/>
 
-        <Grid Grid.Row="0" Margin="15">
+          <Button Content="New Project" Click="NewProject_Click" Style="{StaticResource ToolbarBtn}" Foreground="#4A5568" Padding="12,0"/>
+          <Button Content="Open..." Style="{StaticResource ToolbarBtn}" Foreground="#4A5568" Padding="12,0"/>
+
+          <Separator Width="1" Margin="10,12" Background="#E2E8F0"/>
+
+          <Button Content="Project Settings" Click="ProjectSettings_Click" Style="{StaticResource ToolbarBtn}" Foreground="#4A5568" Padding="12,0"/>
+          
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+          <Border Background="#F1F5F9" CornerRadius="15" Padding="12,4" Margin="0,10,15,10" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock Text="Current Project: " FontSize="11" Foreground="#718096"/>
+              <TextBlock Text="{Binding ProjectName, FallbackValue='None'}" FontSize="11" FontWeight="Bold" Foreground="#4A5568"/>
+            </StackPanel>
+          </Border>
+          <Button Content="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="16" Click="About_Click" Style="{StaticResource ToolbarBtn}" ToolTip="About DocBuilder"/>
+          <StatusBar Grid.Row="2" Background="#007ACC">
+            <StatusBarItem>
+              <TextBlock x:Name="StatusTextBlock" 
+                   Text="Ready" 
+                   Foreground="White" 
+                   FontSize="12" 
+                   Margin="5,0"/>
+            </StatusBarItem>
+          </StatusBar>
+        </StackPanel>
+        
+        
+      </DockPanel>
+    </Border>
+
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="300"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <Border Grid.Column="0" Background="White" BorderBrush="#EEE" BorderThickness="0,0,1,0">
+        <Grid>
           <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="220" />
           </Grid.RowDefinitions>
 
-          <TextBlock Text="PAGES" FontSize="12" FontWeight="Bold" Foreground="#888" Margin="0,0,0,10"/>
+          <Grid Grid.Row="0" Margin="15">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-          <TreeView x:Name="PageTree" Grid.Row="1"
+            <TextBlock Text="PAGES" FontSize="12" FontWeight="Bold" Foreground="#888" Margin="0,0,0,10"/>
+
+            <TreeView x:Name="PageTree" Grid.Row="1"
           ItemsSource="{Binding Pages}" 
           BorderThickness="0" 
           Background="Transparent"
@@ -230,113 +280,113 @@
           Drop="PageTree_Drop"
           QueryContinueDrag="PageTree_QueryContinueDrag">
 
-            <TreeView.ItemContainerStyle>
-              <Style TargetType="TreeViewItem">
-                <Setter Property="IsExpanded" Value="True"/>
-                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                <Setter Property="Padding" Value="5,4"/>
-                <Setter Property="ContextMenu">
-                  <Setter.Value>
-                    <ContextMenu>
-                      <MenuItem Header="Delete Page" 
+              <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                  <Setter Property="IsExpanded" Value="True"/>
+                  <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                  <Setter Property="Padding" Value="5,4"/>
+                  <Setter Property="ContextMenu">
+                    <Setter.Value>
+                      <ContextMenu>
+                        <MenuItem Header="Delete Page" 
                                   Command="{Binding DataContext.DeletePageCommand, ElementName=RootWindow}"
                                   CommandParameter="{Binding}"/>
-                    </ContextMenu>
-                  </Setter.Value>
-                </Setter>
-              </Style>
-            </TreeView.ItemContainerStyle>
+                      </ContextMenu>
+                    </Setter.Value>
+                  </Setter>
+                </Style>
+              </TreeView.ItemContainerStyle>
 
-            <TreeView.ItemTemplate>
-              <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                <Grid Background="Transparent" Margin="0,0,5,0">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="28"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="30"/>
-                  </Grid.ColumnDefinitions>
+              <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                  <Grid Background="Transparent" Margin="0,0,5,0">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="28"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
 
-                  <Border x:Name="IndicatorBorder" 
+                    <Border x:Name="IndicatorBorder" 
                         Width="18" Height="18" 
                         CornerRadius="9" 
                         VerticalAlignment="Center" 
                         HorizontalAlignment="Left">
-                    <TextBlock x:Name="IndicatorText" 
+                      <TextBlock x:Name="IndicatorText" 
                                FontSize="10" 
                                FontWeight="Bold" 
                                HorizontalAlignment="Center" 
                                VerticalAlignment="Center"/>
-                  </Border>
+                    </Border>
 
-                  <TextBlock Grid.Column="1" Text="{Binding Title}" 
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" 
                            VerticalAlignment="Center" FontSize="14" 
                            Foreground="#2D3748"
                            Margin="2,0,0,0"
                            TextTrimming="CharacterEllipsis"/>
 
-                  <Button Grid.Column="2" Content="&#xE74D;" 
+                    <Button Grid.Column="2" Content="&#xE74D;" 
                         FontFamily="Segoe MDL2 Assets" FontSize="12"
                         Background="Transparent" BorderThickness="0" 
                         Foreground="#CBD5E0" HorizontalAlignment="Right"
                         Command="{Binding DataContext.DeletePageCommand, ElementName=RootWindow}"
                         CommandParameter="{Binding}" Cursor="Hand">
-                    <Button.Style>
-                      <Style TargetType="Button">
-                        <Style.Triggers>
-                          <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="#E53E3E"/>
-                          </Trigger>
-                        </Style.Triggers>
-                      </Style>
-                    </Button.Style>
-                  </Button>
-                </Grid>
+                      <Button.Style>
+                        <Style TargetType="Button">
+                          <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                              <Setter Property="Foreground" Value="#E53E3E"/>
+                            </Trigger>
+                          </Style.Triggers>
+                        </Style>
+                      </Button.Style>
+                    </Button>
+                  </Grid>
 
-                <HierarchicalDataTemplate.Triggers>
-                  <DataTrigger Binding="{Binding IsRoot}" Value="True">
-                    <Setter TargetName="IndicatorBorder" Property="Background" Value="#FEE2E2"/>
-                    <Setter TargetName="IndicatorBorder" Property="BorderBrush" Value="#EF4444"/>
-                    <Setter TargetName="IndicatorBorder" Property="BorderThickness" Value="1"/>
-                    <Setter TargetName="IndicatorText" Property="Text" Value="H"/>
-                    <Setter TargetName="IndicatorText" Property="Foreground" Value="#B91C1C"/>
-                  </DataTrigger>
-                  <DataTrigger Binding="{Binding IsRoot}" Value="False">
-                    <Setter TargetName="IndicatorText" Property="Text" Value="↳"/>
-                    <Setter TargetName="IndicatorText" Property="Foreground" Value="#10B981"/>
-                    <Setter TargetName="IndicatorText" Property="FontSize" Value="16"/>
-                    <Setter TargetName="IndicatorText" Property="Margin" Value="0,-4,0,0"/>
-                    <Setter TargetName="IndicatorBorder" Property="Background" Value="Transparent"/>
-                  </DataTrigger>
-                </HierarchicalDataTemplate.Triggers>
-              </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-          </TreeView>
-          <Button Grid.Row="2" Content="+ New Page" Command="{Binding AddPageCommand}" 
+                  <HierarchicalDataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsRoot}" Value="True">
+                      <Setter TargetName="IndicatorBorder" Property="Background" Value="#FEE2E2"/>
+                      <Setter TargetName="IndicatorBorder" Property="BorderBrush" Value="#EF4444"/>
+                      <Setter TargetName="IndicatorBorder" Property="BorderThickness" Value="1"/>
+                      <Setter TargetName="IndicatorText" Property="Text" Value="H"/>
+                      <Setter TargetName="IndicatorText" Property="Foreground" Value="#B91C1C"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsRoot}" Value="False">
+                      <Setter TargetName="IndicatorText" Property="Text" Value="↳"/>
+                      <Setter TargetName="IndicatorText" Property="Foreground" Value="#10B981"/>
+                      <Setter TargetName="IndicatorText" Property="FontSize" Value="16"/>
+                      <Setter TargetName="IndicatorText" Property="Margin" Value="0,-4,0,0"/>
+                      <Setter TargetName="IndicatorBorder" Property="Background" Value="Transparent"/>
+                    </DataTrigger>
+                  </HierarchicalDataTemplate.Triggers>
+                </HierarchicalDataTemplate>
+              </TreeView.ItemTemplate>
+            </TreeView>
+            <Button Grid.Row="2" Content="+ New Page" Command="{Binding AddPageCommand}" 
                             Background="#667eea" Foreground="White" Padding="10" BorderThickness="0" Margin="0,10,0,0"/>
-        </Grid>
+          </Grid>
 
-        <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Background="#F0F0F0"/>
+          <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" Background="#F0F0F0"/>
 
-        <Grid Grid.Row="2" Background="#F9FAFB">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-          </Grid.RowDefinitions>
+          <Grid Grid.Row="2" Background="#F9FAFB">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-          <StackPanel Orientation="Horizontal" Margin="10,10,10,5">
-            <TextBlock Text="RECYCLE BIN" FontSize="11" FontWeight="Bold" Foreground="#A0AEC0"/>
-          </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="10,10,10,5">
+              <TextBlock Text="RECYCLE BIN" FontSize="11" FontWeight="Bold" Foreground="#A0AEC0"/>
+            </StackPanel>
 
-          <ListView Grid.Row="1" ItemsSource="{Binding DeletedPages}" Margin="5" BorderThickness="0" Background="Transparent">
-            <ListView.ItemTemplate>
-              <DataTemplate>
-                <Grid Width="260" Margin="0,2">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="8*"/>
-                    <ColumnDefinition Width="2*"/>
-                  </Grid.ColumnDefinitions>
-                  <TextBlock Text="{Binding Title}" VerticalAlignment="Center" FontSize="12" Foreground="#4A5568"/>
-                  <Button Grid.Column="1" 
+            <ListView Grid.Row="1" ItemsSource="{Binding DeletedPages}" Margin="5" BorderThickness="0" Background="Transparent">
+              <ListView.ItemTemplate>
+                <DataTemplate>
+                  <Grid Width="260" Margin="0,2">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="8*"/>
+                      <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center" FontSize="12" Foreground="#4A5568"/>
+                    <Button Grid.Column="1" 
                                             Content="&#xE777;" 
                                             FontFamily="Segoe MDL2 Assets" 
                                             FontSize="12"
@@ -347,72 +397,73 @@
                                             ToolTip="Restore to Root"
                                             Command="{Binding DataContext.RestorePageCommand, ElementName=RootWindow}"
                                             CommandParameter="{Binding}"/>
-                </Grid>
-              </DataTemplate>
-            </ListView.ItemTemplate>
-          </ListView>
+                  </Grid>
+                </DataTemplate>
+              </ListView.ItemTemplate>
+            </ListView>
+          </Grid>
         </Grid>
-      </Grid>
-    </Border>
+      </Border>
 
-    <Grid Grid.Column="1" Margin="30">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="Auto"/>
-      </Grid.RowDefinitions>
+      <Grid Grid.Column="1" Margin="30">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-      <StackPanel Grid.Row="0" Margin="0,0,0,20">
-        <TextBox Text="{Binding CurrentPage.Title, UpdateSourceTrigger=PropertyChanged}" 
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+          <TextBox Text="{Binding CurrentPage.Title, UpdateSourceTrigger=PropertyChanged}" 
                          FontSize="28" FontWeight="Bold" BorderThickness="0,0,0,1" Background="Transparent" Padding="0,5"/>
-        <TextBlock Text="{Binding CurrentPage.FileName}" Foreground="#AAA" FontSize="12" Margin="0,5,0,0"/>
-      </StackPanel>
+          <TextBlock Text="{Binding CurrentPage.FileName}" Foreground="#AAA" FontSize="12" Margin="0,5,0,0"/>
+        </StackPanel>
 
-      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-        <ItemsControl ItemsSource="{Binding CurrentPage.Sections}"/>
-      </ScrollViewer>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding CurrentPage.Sections}"/>
+        </ScrollViewer>
 
-      <Border Grid.Row="2" Padding="15,10" Background="White" CornerRadius="12" Margin="0,20,0,0" Effect="{DynamicResource DropShadowEffect}">
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-          <Button Content="H1" Command="{Binding AddSectionCommand}" CommandParameter="H1" Style="{StaticResource ActionButton}" Width="45"/>
-          <Button Content="H2" Command="{Binding AddSectionCommand}" CommandParameter="H2" Style="{StaticResource ActionButton}" Width="45"/>
-          <Button Content="H3" Command="{Binding AddSectionCommand}" CommandParameter="H3" Style="{StaticResource ActionButton}" Width="45"/>
+        <Border Grid.Row="2" Padding="15,10" Background="White" CornerRadius="12" Margin="0,20,0,0" Effect="{DynamicResource DropShadowEffect}">
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Content="H1" Command="{Binding AddSectionCommand}" CommandParameter="H1" Style="{StaticResource ActionButton}" Width="45"/>
+            <Button Content="H2" Command="{Binding AddSectionCommand}" CommandParameter="H2" Style="{StaticResource ActionButton}" Width="45"/>
+            <Button Content="H3" Command="{Binding AddSectionCommand}" CommandParameter="H3" Style="{StaticResource ActionButton}" Width="45"/>
 
-          <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,5"/>
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="8,5"/>
 
-          <Button Content="Description" Command="{Binding AddSectionCommand}" CommandParameter="Paragraph" Style="{StaticResource ActionButton}"/>
-          <Button Content="Code" Command="{Binding AddSectionCommand}" CommandParameter="Code" Style="{StaticResource ActionButton}"
+            <Button Content="Description" Command="{Binding AddSectionCommand}" CommandParameter="Paragraph" Style="{StaticResource ActionButton}"/>
+            <Button Content="Code" Command="{Binding AddSectionCommand}" CommandParameter="Code" Style="{StaticResource ActionButton}"
                   Background="#1A202C" Foreground="#E2E8F0" BorderBrush="#333333" />
-          <Button Content="Image" Command="{Binding AddSectionCommand}" CommandParameter="Image" Style="{StaticResource ActionButton}"/>
+            <Button Content="Image" Command="{Binding AddSectionCommand}" CommandParameter="Image" Style="{StaticResource ActionButton}"/>
 
-          <Button Content="⚠ Warning" Command="{Binding AddSectionCommand}" CommandParameter="Warning" 
+            <Button Content="⚠ Warning" Command="{Binding AddSectionCommand}" CommandParameter="Warning" 
                 Style="{StaticResource ActionButton}" Background="#FFF5F5" Foreground="#C53030" BorderBrush="#FEB2B2"/>
 
-          <Button Content="💡 Note" Command="{Binding AddSectionCommand}" CommandParameter="Note" 
+            <Button Content="💡 Note" Command="{Binding AddSectionCommand}" CommandParameter="Note" 
                 Style="{StaticResource ActionButton}" Background="#FFFFF0" Foreground="#B7791F" BorderBrush="#F6E05E"/>
 
-          <Button Content="― Separator" Command="{Binding AddSectionCommand}" CommandParameter="Separator" Style="{StaticResource ActionButton}"/>
-          <Button Content="🏷 Tags" Command="{Binding AddSectionCommand}" CommandParameter="Tags" Style="{StaticResource ActionButton}"/>
-          <Button Content="• List" Command="{Binding AddSectionCommand}" CommandParameter="Bullets" Style="{StaticResource ActionButton}"/>
+            <Button Content="― Separator" Command="{Binding AddSectionCommand}" CommandParameter="Separator" Style="{StaticResource ActionButton}"/>
+            <Button Content="🏷 Tags" Command="{Binding AddSectionCommand}" CommandParameter="Tags" Style="{StaticResource ActionButton}"/>
+            <Button Content="• List" Command="{Binding AddSectionCommand}" CommandParameter="Bullets" Style="{StaticResource ActionButton}"/>
 
-          <Rectangle Width="1" Fill="#E2E8F0" Margin="15,8"/>
+            <Rectangle Width="1" Fill="#E2E8F0" Margin="15,8"/>
 
-          <Button Command="{Binding PublishCommand}" Padding="25,10" Cursor="Hand">
-            <Button.Template>
-              <ControlTemplate TargetType="Button">
-                <Border Background="#10B781" 
+            <Button Command="{Binding PublishCommand}" Padding="25,10" Cursor="Hand">
+              <Button.Template>
+                <ControlTemplate TargetType="Button">
+                  <Border Background="#10B781" 
               CornerRadius="8" 
               Padding="{TemplateBinding Padding}">
-                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="PUBLISH TO IIS" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
-                  </StackPanel>
-                </Border>
-              </ControlTemplate>
-            </Button.Template>
-          </Button>
-        </StackPanel>
-      </Border>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets" Foreground="White" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                      <TextBlock Text="PUBLISH TO IIS" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </Border>
+                </ControlTemplate>
+              </Button.Template>
+            </Button>
+          </StackPanel>
+        </Border>
+      </Grid>
     </Grid>
   </Grid>
 </Window>

@@ -9,10 +9,51 @@ namespace DocBuilder.Views
   public partial class SetupWindow : Window
   {
     public ProjectSettings ResultSettings { get; private set; }
+    public ObservableCollection<ThemeItem> Themes { get; set; }
+    private ThemeItem _tempSelectedTheme;
 
     public SetupWindow()
     {
       InitializeComponent();
+      LoadThemes();
+      DataContext = this;
+    }
+    //private void LoadThemes()
+    //{
+    //  // Initialize with your 9 themes. 
+    //  // Ensure these images exist in your /Resources/Themes/ folder
+    //  Themes = new ObservableCollection<ThemeItem>
+    //        {
+    //            new ThemeItem { Name = "Modern Blue", CssFileName = "modern-blue.css", ScreenshotPath = "/Resources/Themes/modern-blue.png", IsSelected = true },
+    //            new ThemeItem { Name = "Dark Forest", CssFileName = "dark-forest.css", ScreenshotPath = "/Resources/Themes/dark-forest.png" },
+    //            new ThemeItem { Name = "Midnight", CssFileName = "midnight.css", ScreenshotPath = "/Resources/Themes/midnight.png" },
+    //            new ThemeItem { Name = "Cyberpunk", CssFileName = "cyberpunk.css", ScreenshotPath = "/Resources/Themes/cyberpunk.png" },
+    //            new ThemeItem { Name = "Clean White", CssFileName = "clean-white.css", ScreenshotPath = "/Resources/Themes/clean-white.png" },
+    //            new ThemeItem { Name = "Slate Grey", CssFileName = "slate-grey.css", ScreenshotPath = "/Resources/Themes/slate-grey.png" },
+    //            new ThemeItem { Name = "Crimson", CssFileName = "crimson.css", ScreenshotPath = "/Resources/Themes/crimson.png" },
+    //            new ThemeItem { Name = "Solarized", CssFileName = "solarized.css", ScreenshotPath = "/Resources/Themes/solarized.png" },
+    //            new ThemeItem { Name = "High Contrast", CssFileName = "high-contrast.css", ScreenshotPath = "/Resources/Themes/high-contrast.png" }
+    //        };
+
+    //  ThemeItemsControl.ItemsSource = Themes;
+    //  UpdateThemeLabel();
+    //}
+    private void LoadThemes()
+    {
+      string placeholderPath = "pack://application:,,,/Resources/placeholder.png";
+
+      Themes = new ObservableCollection<ThemeItem>
+    {
+        new ThemeItem { Name = "Modern Blue", CssFileName = "modern-blue.css", ScreenshotPath = placeholderPath, IsSelected = true },
+        new ThemeItem { Name = "Dark Forest", CssFileName = "dark-forest.css", ScreenshotPath = placeholderPath },
+        new ThemeItem { Name = "Midnight", CssFileName = "midnight.css", ScreenshotPath = placeholderPath },
+        new ThemeItem { Name = "Cyberpunk", CssFileName = "cyberpunk.css", ScreenshotPath = placeholderPath },
+        new ThemeItem { Name = "Clean White", CssFileName = "clean-white.css", ScreenshotPath = placeholderPath },
+        new ThemeItem { Name = "Slate Grey", CssFileName = "slate-grey.css", ScreenshotPath = placeholderPath }
+    };
+
+      ThemeItemsControl.ItemsSource = Themes;
+      UpdateThemeLabel();
     }
 
     private void ShowNewProjectConfig_Click(object sender, RoutedEventArgs e)
@@ -25,6 +66,35 @@ namespace DocBuilder.Views
     {
       ConfigView.Visibility = Visibility.Collapsed;
       WelcomeView.Visibility = Visibility.Visible;
+    }
+
+    private void ShowThemeGallery_Click(object sender, RoutedEventArgs e)
+    {
+      // Save current selection in case they cancel
+      _tempSelectedTheme = Themes.FirstOrDefault(t => t.IsSelected);
+      ThemeGalleryView.Visibility = Visibility.Visible;
+    }
+
+    private void ConfirmThemeSelection_Click(object sender, RoutedEventArgs e)
+    {
+      UpdateThemeLabel();
+      ThemeGalleryView.Visibility = Visibility.Collapsed;
+    }
+
+    private void UpdateThemeLabel()
+    {
+      var selected = Themes.FirstOrDefault(t => t.IsSelected);
+      if (selected != null)
+      {
+        TxtSelectedThemeName.Text = $"(Current: {selected.Name})";
+      }
+    }
+
+    private void CancelThemeSelection_Click(object sender, RoutedEventArgs e)
+    {
+      // Revert to the theme that was selected before opening the gallery
+      foreach (var t in Themes) t.IsSelected = (t == _tempSelectedTheme);
+      ThemeGalleryView.Visibility = Visibility.Collapsed;
     }
 
     private void BrowseDestination_Click(object sender, RoutedEventArgs e)
@@ -53,11 +123,38 @@ namespace DocBuilder.Views
       string rootPath = TxtDestination.Text;
       string docsPath = Path.Combine(rootPath, "Docs");
       string imgPath = Path.Combine(rootPath, "img");
+      string themePath = Path.Combine(docsPath, "Themes");
 
       if (!Directory.Exists(docsPath)) Directory.CreateDirectory(docsPath);
       if (!Directory.Exists(imgPath)) Directory.CreateDirectory(imgPath);
+      if (!Directory.Exists(themePath)) Directory.CreateDirectory(themePath);
 
       string relativeLogoPath = "";
+
+      // --- THEME COPY LOGIC ---
+      var selectedTheme = Themes.FirstOrDefault(t => t.IsSelected);
+
+      if (selectedTheme != null)
+      {
+        // Sanity check: Ensure the filename isn't null or empty
+        if (string.IsNullOrEmpty(selectedTheme.CssFileName))
+        {
+          System.Windows.MessageBox.Show($"Theme '{selectedTheme.Name}' is missing its CSS filename definition.");
+          return;
+        }
+
+        string sourceCss = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Themes", selectedTheme.CssFileName);
+        string destCss = Path.Combine(themePath, "active-theme.css");
+
+        if (File.Exists(sourceCss))
+        {
+          File.Copy(sourceCss, destCss, true);
+        }
+        else
+        {
+          System.Windows.MessageBox.Show("Source CSS file not found at: " + sourceCss);
+        }
+      }
 
       // 1. Copy the logo
       if (!string.IsNullOrWhiteSpace(TxtLogoPath.Text) && File.Exists(TxtLogoPath.Text))

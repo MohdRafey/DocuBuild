@@ -1,0 +1,311 @@
+﻿/* --- Global Resets & Variables --- */
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-color: #667eea;
+  --bg-color: #f5f5f5;
+  --card-bg: #ffffff;
+  --text-main: #333;
+  --text-muted: #666;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --border-radius: 12px;
+}
+
+html {
+  overflow-y: scroll; /* Forces scrollbar gutter to always exist */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: var(--text-main);
+  background: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Header & Top Nav --- */
+.doc-header {
+  background: var(--primary-gradient);
+  color: white;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+  .header-brand img {
+    height: 40px;
+    width: auto;
+  }
+
+.top-right-nav .home-btn {
+  color: white;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+  .top-right-nav .home-btn:hover {
+    background: white;
+    color: var(--primary-color);
+  }
+
+/* --- Layout Wrapper --- */
+.main-wrapper {
+  display: flex;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  gap: 2rem;
+  flex: 1;
+}
+
+/* --- Sidebar (Sticky Navigation) --- */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.sidebar-content {
+  position: sticky;
+  top: 2rem;
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.sidebar h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #aaa;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  margin-bottom: 0.3rem;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #555;
+  display: block;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+  .sidebar a:hover {
+    background: #f0f2ff;
+    color: var(--primary-color);
+  }
+
+  .sidebar a.active {
+    background: var(--primary-color);
+    color: white;
+  }
+
+/* Sidebar Indentation for Children */
+.sidebar .sub-menu {
+  margin-left: 1.2rem; /* Indents child items */
+  margin-top: 0.2rem;
+}
+
+.sidebar .sub-menu a {
+  font-size: 0.9rem; /* Slightly smaller text for sub-items */
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+/* Hover effect for sub-menu items */
+.sidebar .sub-menu a:hover {
+  background: #f0f2ff;
+}
+
+.sidebar .sub-menu a.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* --- Main Content Card --- */
+.doc-container {
+  flex-grow: 1;
+  min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.breadcrumb {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+  .breadcrumb a {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .breadcrumb span {
+    margin: 0 0.5rem;
+    color: #ccc;
+  }
+
+.doc-card {
+  background: var(--card-bg);
+  padding: 3.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.doc-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: #1a1a1a;
+}
+
+.doc-description {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* --- Typography & Elements --- */
+.doc-content h2 {
+  font-size: 1.8rem;
+  margin: 2.5rem 0 1rem;
+  color: #2a2a2a;
+  border-bottom: 2px solid #f0f2ff;
+  padding-bottom: 0.5rem;
+}
+
+.doc-content p {
+  margin: 1.2rem 0;
+  font-size: 1.05rem;
+}
+
+pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1.5rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-family: 'Fira Code', 'Courier New', monospace;
+}
+
+code {
+  background: #fdf0f5;
+  color: #e83e8c;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* --- Footer --- */
+footer {
+  text-align: center;
+  padding: 3rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+/* --- Special Content Sections --- */
+
+/* Alerts: Warning & Note */
+.alert {
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  border-left: 5px solid;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.alert-warning {
+  background-color: #fff8e1;
+  border-left-color: #ffc107;
+  color: #856404;
+}
+
+.alert-note {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #0d47a1;
+}
+
+.alert-icon {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Bullets & Lists */
+.doc-content ul {
+  list-style: none; /* We will use custom bullets */
+  margin: 1.5rem 0 1.5rem 1rem;
+}
+
+  .doc-content ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+    .doc-content ul li::before {
+      content: "•";
+      color: var(--primary-color);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+/* Horizontal Rule (Separator) */
+hr.section-sep {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+  margin: 3rem 0;
+}
+
+/* Code Block Enhancements */
+.code-header {
+  background: #333;
+  color: #aaa;
+  padding: 0.5rem 1rem;
+  border-radius: 8px 8px 0 0;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: -1.5rem; /* Join with pre block */
+  position: relative;
+  z-index: 2;
+}

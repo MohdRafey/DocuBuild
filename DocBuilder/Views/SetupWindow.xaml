@@ -1,7 +1,7 @@
 ﻿<Window x:Class="DocBuilder.Views.SetupWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Documentation Setup" Height="500" Width="650"
+        Title="Documentation Setup" Height="700" Width="1000"
         WindowStartupLocation="CenterScreen" Background="#F5F5F7">
 
   <Grid>
@@ -63,11 +63,90 @@
           <Button Grid.Column="1" Content="&#xE8B7;" FontFamily="Segoe MDL2 Assets" Width="40" Click="BrowseLogo_Click"/>
         </Grid>
 
+        <TextBlock Text="Project Theme" FontWeight="SemiBold" Margin="0,0,0,8"/>
+        <Button Click="ShowThemeGallery_Click" Background="White" BorderBrush="#E2E8F0" Padding="15" Margin="0,0,0,20">
+          <DockPanel>
+            <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets" Foreground="#667eea" Margin="0,0,15,0" VerticalAlignment="Center"/>
+            <TextBlock Text="Browse Themes" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock x:Name="TxtSelectedThemeName" Text="(Current: Modern Blue)" Foreground="#718096" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+          </DockPanel>
+        </Button>
+
         <CheckBox x:Name="ChkUseTemplate" Content="Use 'Get Started' template" IsChecked="True" Margin="0,10,0,0"/>
       </StackPanel>
 
       <Button Grid.Row="2" Content="Create Project" Click="FinalizeNewProject_Click" 
                     Background="#667eea" Foreground="White" Padding="20,12" FontWeight="Bold" HorizontalAlignment="Right"/>
+    </Grid>
+
+    <Grid x:Name="ThemeGalleryView" Background="#F5F5F7" Visibility="Collapsed">
+      <Grid Margin="40">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+          <TextBlock Text="Theme Gallery" FontSize="28" FontWeight="Bold"/>
+          <TextBlock Text="Choose the visual style for your published documentation." Foreground="#718096"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="15" Padding="20" BorderBrush="#E2E8F0" BorderThickness="1">
+          <ItemsControl x:Name="ThemeItemsControl">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="3" Rows="2" VerticalAlignment="Top"/>
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <RadioButton GroupName="ThemeSelector" IsChecked="{Binding IsSelected}" Margin="10">
+                  <RadioButton.Template>
+                    <ControlTemplate TargetType="RadioButton">
+                      <Border x:Name="ThemeBorder" BorderThickness="3" BorderBrush="Transparent" CornerRadius="12" Padding="10">
+                        <Grid>
+                          <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                          </Grid.RowDefinitions>
+
+                          <Border Grid.Row="0" CornerRadius="8" ClipToBounds="True" Background="#F1F5F9">
+                            <Image Source="{Binding ScreenshotPath, IsAsync=True, TargetNullValue='pack://application:,,,/Resources/placeholder.png'}" 
+                       Stretch="UniformToFill"
+                       VerticalAlignment="Top"/>
+                          </Border>
+
+                          <TextBlock Grid.Row="1" 
+                       Text="{Binding Name}" 
+                       HorizontalAlignment="Center" 
+                       FontSize="16" 
+                       FontFamily="Segoe UI Semibold" 
+                       Foreground="#1E293B" 
+                       Margin="0,10,0,0"
+                       TextWrapping="NoWrap"/>
+                        </Grid>
+                      </Border>
+
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                          <Setter TargetName="ThemeBorder" Property="BorderBrush" Value="#667eea"/>
+                          <Setter TargetName="ThemeBorder" Property="Background" Value="#F8FAFF"/>
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </RadioButton.Template>
+                </RadioButton>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Border>
+
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+          <Button Content="CANCEL" Click="CancelThemeSelection_Click" HorizontalAlignment="Left" Padding="30,12" Background="#EDF2F7"/>
+          <Button Content="CONFIRM SELECTION" Click="ConfirmThemeSelection_Click" HorizontalAlignment="Right" Padding="30,12" Background="#667eea" Foreground="White" FontWeight="Bold"/>
+        </Grid>
+      </Grid>
     </Grid>
   </Grid>
 </Window>
