@@ -2,6 +2,7 @@
 using DocBuilder.Models;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.Json;
 using System.Windows.Input;
 
 namespace DocBuilder.WPF.ViewModels
@@ -98,26 +99,32 @@ namespace DocBuilder.WPF.ViewModels
     }
 
     #region Loading Existing project
+    private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+    {
+      PropertyNameCaseInsensitive = true,
+      Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
+
     public void LoadProject(string navigationJsonPath)
     {
       try
       {
-        // 1. Clear current state to avoid mixing projects
         Pages.Clear();
         DeletedPages.Clear();
 
         if (!File.Exists(navigationJsonPath)) return;
 
-        // 2. Read the Manifest
         string jsonContent = File.ReadAllText(navigationJsonPath);
-        var manifest = System.Text.Json.JsonSerializer.Deserialize<ProjectManifest>(jsonContent);
+        var manifest = JsonSerializer.Deserialize<ProjectManifest>(jsonContent, _jsonOptions);
 
-        // 3. Set the directory context (The folder containing the JSON sidecars)
+        if (manifest?.Structure == null) return;
+
         string docsFolder = Path.Combine(Path.GetDirectoryName(navigationJsonPath), "Docs");
 
-        // 4. Load the structure recursively
         foreach (var pageRef in manifest.Structure)
         {
+          if (string.IsNullOrEmpty(pageRef.FileName)) continue;
+
           var loadedRootPage = LoadPageWithChildren(pageRef.FileName, docsFolder);
           if (loadedRootPage != null)
           {
@@ -125,52 +132,57 @@ namespace DocBuilder.WPF.ViewModels
           }
         }
 
-        // 5. Success! The project is now "Clean" because it matches the disk
         IsDirty = false;
-
-        // Auto-select the first page if available
         CurrentPage = Pages.FirstOrDefault();
       }
       catch (Exception ex)
       {
-        System.Windows.MessageBox.Show($"Failed to load project: {ex.Message}");
+        System.Windows.MessageBox.Show($"Error loading project content: {ex.Message}\n\n{ex.StackTrace}");
       }
     }
 
     private DocPage LoadPageWithChildren(string fileName, string docsFolder)
     {
-      // Construct path to the individual page JSON (e.g., index.json)
       string jsonName = Path.GetFileNameWithoutExtension(fileName) + ".json";
       string fullPath = Path.Combine(docsFolder, jsonName);
 
       if (!File.Exists(fullPath)) return null;
 
-      // Load the page data
-      string pageJson = File.ReadAllText(fullPath);
-      var page = System.Text.Json.JsonSerializer.Deserialize<DocPage>(pageJson);
-
-      if (page != null)
+      try
       {
-        // IMPORTANT: Attach the dirty-tracking observers
-        WatchPageSections(page);
+        string pageJson = File.ReadAllText(fullPath);
+        var page = JsonSerializer.Deserialize<DocPage>(pageJson, _jsonOptions);
 
-        // Recursively load children if they exist
-        if (page.Children != null && page.Children.Count > 0)
+        if (page != null)
         {
-          // We need to reload children from THEIR sidecar files to get their SECTIONS
-          for (int i = 0; i < page.Children.Count; i++)
+          if (page.Sections == null)
+            page.Sections = new ObservableCollection<DocSection>();
+
+          WatchPageSections(page);
+
+          if (page.Children != null && page.Children.Count > 0)
           {
-            var childFileName = page.Children[i].FileName;
-            var fullyLoadedChild = LoadPageWithChildren(childFileName, docsFolder);
-            if (fullyLoadedChild != null)
+            for (int i = 0; i < page.Children.Count; i++)
             {
-              page.Children[i] = fullyLoadedChild;
+              var childFileName = page.Children[i].FileName;
+              if (string.IsNullOrEmpty(childFileName)) continue;
+
+              var fullyLoadedChild = LoadPageWithChildren(childFileName, docsFolder);
+              if (fullyLoadedChild != null)
+              {
+                page.Children[i] = fullyLoadedChild;
+              }
             }
           }
         }
-      }
 
-      return page;
+        return page;
+      }
+      catch (Exception ex)
+      {
+        System.Windows.MessageBox.Show($"Error reading page '{fileName}': {ex.Message}");
+        return null;
+      }
     }
     #endregion
 

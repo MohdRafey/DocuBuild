@@ -195,7 +195,6 @@ namespace DocBuilder.Views
         string rootDir = Path.GetDirectoryName(selectedFile);
         string docsPath = Path.Combine(rootDir, "Docs");
 
-        // Safety check: ensure the Docs folder exists
         if (!Directory.Exists(docsPath))
         {
           System.Windows.MessageBox.Show("Could not find the 'Docs' folder in this directory.",
@@ -203,13 +202,37 @@ namespace DocBuilder.Views
           return;
         }
 
+        string brandName = "My Documentation";
+        string logoPath = "";
+        string themeName = "Modern Blue"; // Safe default matching ThemeRegistry
+
+        try
+        {
+          string json = File.ReadAllText(selectedFile);
+          using var doc = JsonDocument.Parse(json);
+          var root = doc.RootElement;
+
+          if (root.TryGetProperty("ProjectName", out var pName))
+            brandName = pName.GetString() ?? brandName;
+
+          if (root.TryGetProperty("LogoPath", out var lPath))
+            logoPath = lPath.GetString() ?? "";
+
+          if (root.TryGetProperty("ThemeName", out var tName))
+            themeName = tName.GetString() ?? themeName;
+        }
+        catch (Exception ex)
+        {
+          System.Windows.MessageBox.Show($"Warning: Could not fully read project manifest: {ex.Message}");
+        }
+
         ResultSettings = new ProjectSettings
         {
           IsExistingProject = true,
-          // The output path is the Docs folder where HTML/JSON sidecars live
+          BrandName = brandName,
+          LogoPath = logoPath,
+          ThemeName = themeName,
           OutputPath = docsPath,
-          // We assume the first file in the manifest is the home, 
-          // but we'll set a default for now.
           HomeFileName = "index.html"
         };
 

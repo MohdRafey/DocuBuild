@@ -93,53 +93,58 @@
         </StackPanel>
 
         <Border Grid.Row="1" Background="White" CornerRadius="15" Padding="20" BorderBrush="#E2E8F0" BorderThickness="1">
-          <ItemsControl x:Name="ThemeItemsControl">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <UniformGrid Columns="3" Rows="2" VerticalAlignment="Top"/>
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <RadioButton GroupName="ThemeSelector" IsChecked="{Binding IsSelected}" Margin="10">
-                  <RadioButton.Template>
-                    <ControlTemplate TargetType="RadioButton">
-                      <Border x:Name="ThemeBorder" BorderThickness="3" BorderBrush="Transparent" CornerRadius="12" Padding="10">
-                        <Grid>
-                          <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                          </Grid.RowDefinitions>
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl x:Name="ThemeItemsControl">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <!-- Specifying only Columns="3" lets rows grow dynamically -->
+                  <UniformGrid Columns="3" VerticalAlignment="Top"/>
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <RadioButton GroupName="ThemeSelector" IsChecked="{Binding IsSelected}" Margin="10">
+                    <RadioButton.Template>
+                      <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="ThemeBorder" BorderThickness="3" BorderBrush="Transparent" CornerRadius="12" Padding="10">
+                          <Grid>
+                            <Grid.RowDefinitions>
+                              <!-- Give image container a fixed height to prevent vertical blowouts -->
+                              <RowDefinition Height="140"/>
+                              <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                          <Border Grid.Row="0" CornerRadius="8" ClipToBounds="True" Background="#F1F5F9">
-                            <Image Source="{Binding ScreenshotPath, IsAsync=True, TargetNullValue='pack://application:,,,/Resources/placeholder.png'}" 
-                       Stretch="UniformToFill"
-                       VerticalAlignment="Top"/>
-                          </Border>
+                            <Border Grid.Row="0" CornerRadius="8" ClipToBounds="True" Background="#F1F5F9">
+                              <Image Source="{Binding ScreenshotPath, IsAsync=True, TargetNullValue='pack://application:,,,/Resources/placeholder.png'}" 
+                             Stretch="UniformToFill"
+                             VerticalAlignment="Top"/>
+                            </Border>
 
-                          <TextBlock Grid.Row="1" 
-                       Text="{Binding Name}" 
-                       HorizontalAlignment="Center" 
-                       FontSize="16" 
-                       FontFamily="Segoe UI Semibold" 
-                       Foreground="#1E293B" 
-                       Margin="0,10,0,0"
-                       TextWrapping="NoWrap"/>
-                        </Grid>
-                      </Border>
+                            <TextBlock Grid.Row="1" 
+                               Text="{Binding Name}" 
+                               HorizontalAlignment="Center" 
+                               FontSize="15" 
+                               FontFamily="Segoe UI Semibold" 
+                               Foreground="#1E293B" 
+                               Margin="0,10,0,0"
+                               TextTrimming="CharacterEllipsis"
+                               TextWrapping="NoWrap"/>
+                          </Grid>
+                        </Border>
 
-                      <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                          <Setter TargetName="ThemeBorder" Property="BorderBrush" Value="#667eea"/>
-                          <Setter TargetName="ThemeBorder" Property="Background" Value="#F8FAFF"/>
-                        </Trigger>
-                      </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                  </RadioButton.Template>
-                </RadioButton>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+                        <ControlTemplate.Triggers>
+                          <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="ThemeBorder" Property="BorderBrush" Value="#667eea"/>
+                            <Setter TargetName="ThemeBorder" Property="Background" Value="#F8FAFF"/>
+                          </Trigger>
+                        </ControlTemplate.Triggers>
+                      </ControlTemplate>
+                    </RadioButton.Template>
+                  </RadioButton>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
         </Border>
 
         <Grid Grid.Row="2" Margin="0,20,0,0">

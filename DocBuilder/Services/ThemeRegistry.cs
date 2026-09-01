@@ -7,10 +7,6 @@ namespace DocBuilder.Services
   public static class ThemeRegistry
   {
     private const string PlaceholderPath = "pack://application:,,,/Resources/placeholder.png";
-
-    /// <summary>
-    /// Returns the master list of available themes.
-    /// </summary>
     public static List<ThemeItem> GetAvailableThemes()
     {
       return new List<ThemeItem>
@@ -23,6 +19,22 @@ namespace DocBuilder.Services
                 new ThemeItem { Name = "CleanWhite", ScreenshotPath = PlaceholderPath },
                 new ThemeItem { Name = "SlateGrey", ScreenshotPath = PlaceholderPath }
             };
+    }
+
+    public static ThemeItem GetThemeByName(string themeName)
+    {
+      var themes = GetAvailableThemes();
+
+      if (string.IsNullOrWhiteSpace(themeName))
+        return themes.FirstOrDefault() ?? new ThemeItem();
+
+      // Normalizes "ModernBlue", "Modern Blue", "modern-blue" so dictionary/key mismatch doesn't throw
+      string cleanName = themeName.Replace(" ", "").Replace("-", "").ToLowerInvariant();
+
+      var match = themes.FirstOrDefault(t =>
+          t.Name.Replace(" ", "").Replace("-", "").ToLowerInvariant() == cleanName);
+
+      return match ?? themes.FirstOrDefault() ?? new ThemeItem();
     }
   }
 }
